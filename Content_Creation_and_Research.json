@@ -1,0 +1,493 @@
+{
+  "name": "Content Creation and Research",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"api_key\": \"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\",\n  \"query\": \"{{ $json['Content Subject'].replace(/\"/g,'\\\\\"') }}\",\n  \"search_depth\": \"basic\",\n  \"max_results\": 3,\n  \"include_answer\": true,\n  \"include_raw_content\": false,\n  \"topic\": \"news\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        0
+      ],
+      "id": "7f1c2ed6-a791-4fa9-8052-33b93a8e2b99",
+      "name": "Search Internet"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        220,
+        220
+      ],
+      "id": "82e21ead-37b2-4f85-89d1-f2a644323785",
+      "name": "Split Out",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "include": "specifiedFields",
+        "fieldsToInclude": "title, content",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        660,
+        220
+      ],
+      "id": "30ee98f3-99e8-4369-8f27-b5ea43f34403",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Article Content:\n{{ $('Aggregate').item.json.data.toJsonString() }}\n\nTarget Audience:\n{{ $('Set Fields').last().json['Target Audience'] }}",
+        "options": {
+          "systemMessage": "=# System Role  \nYou are an expert Twitter content creator specializing in transforming articles into engaging, concise tweets tailored to a specific target audience.  \n\n# Task Specification  \nUsing the provided article, craft a tweet that is:  \n1. Short, concise, and optimized for Twitter’s character limit (280 characters).  \n2. Tailored to resonate with the target audience’s interests, needs, and goals.  \n3. Incorporates 1-2 emojis to enhance personality and appeal.  \n4. Offers value or insight and includes a clear call to action.  \n5. Contains 1-3 relevant hashtags.  \n6. Outputs only the tweet text—nothing else.  \n\n# Specifics and Context  \nThe tweet should distill the essence of the article into a single impactful message. It must grab attention, provide immediate value, and encourage engagement (e.g., likes, replies, or clicks).  \n\n# Examples  \n## Example 1  \n**Input:** Article about productivity tips for managers.  \n**Output:**  \nClemson Tigers make history with an 85-65 victory over UNC! 🏀 A game for the record books. 🐅\n---\n#Clemson #ClemsonBasketball\n\n# Reminders  \n- Keep the tone approachable and engaging.  \n- Use emojis sparingly for emphasis.  \n- Ensure the tweet stays within 280 characters and is tailored to the audience.  \n- Only output the tweet text.  \nassistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        40,
+        460
+      ],
+      "id": "8f583c99-020d-42ed-8fe9-d24abf90cc2e",
+      "name": "X"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "18cIqVcqBSyOuX-lZ8Vfbvgtd53VwZJ9g7e-GbnlzKPU",
+          "mode": "list",
+          "cachedResultName": "Content Creation Agents n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18cIqVcqBSyOuX-lZ8Vfbvgtd53VwZJ9g7e-GbnlzKPU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18cIqVcqBSyOuX-lZ8Vfbvgtd53VwZJ9g7e-GbnlzKPU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Campaign": "={{ $('Google Sheets Trigger').last().json.Campaign }}",
+            "X": "={{ $('X').last().json.output }}"
+          },
+          "matchingColumns": [
+            "Campaign"
+          ],
+          "schema": [
+            {
+              "id": "Campaign",
+              "displayName": "Campaign",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content Subject",
+              "displayName": "Content Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Target Audience",
+              "displayName": "Target Audience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "LinkedIn",
+              "displayName": "LinkedIn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "X",
+              "displayName": "X",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        620,
+        460
+      ],
+      "id": "4050c14d-1b62-4a6d-ae1b-89c183c6de5e",
+      "name": "Update Campaign",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "VhHr2hOGHsulaDw5",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        60,
+        620
+      ],
+      "id": "eda17066-fa0e-4457-a188-f93b373a9e70",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "9Qv83qTcHTWQkFIC",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "da233ac5-a88c-42df-81bc-01790c687be4",
+              "name": "",
+              "value": "={{ $json.Campaign }}",
+              "type": "string"
+            },
+            {
+              "id": "a345a58f-3251-4e1e-914b-ee647c6aecfc",
+              "name": "Content Subject",
+              "value": "={{ $json['Content Subject'] }}",
+              "type": "string"
+            },
+            {
+              "id": "516fb782-e3fb-4e8c-a016-544191a12854",
+              "name": "Target Audience",
+              "value": "={{ $json['Target Audience'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        0
+      ],
+      "id": "08ef5482-1a1b-46a9-a0ce-5236b3b96c8f",
+      "name": "Set Fields"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "18cIqVcqBSyOuX-lZ8Vfbvgtd53VwZJ9g7e-GbnlzKPU",
+          "mode": "list",
+          "cachedResultName": "Content Creation Agents n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18cIqVcqBSyOuX-lZ8Vfbvgtd53VwZJ9g7e-GbnlzKPU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18cIqVcqBSyOuX-lZ8Vfbvgtd53VwZJ9g7e-GbnlzKPU/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        40,
+        0
+      ],
+      "id": "a93b261c-3a21-4daf-a12b-3e97468d89ce",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "Ps17q8eoRBRdAeIp",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4f357ed1-c9ce-4a3b-8282-a798676bf95b",
+              "leftValue": "={{ $('Google Sheets Trigger').last().json['Send'] }}",
+              "rightValue": "Y",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        460
+      ],
+      "id": "b4519dd4-af36-43a9-9e0a-6377a9ad90e5",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "content": "## Posting To Social \n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/sticky-notes/)",
+        "height": 480,
+        "width": 660,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        -80
+      ],
+      "id": "0472185e-358f-4893-8bf7-6a774cfa2384",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Agents \n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/sticky-notes/)",
+        "height": 900,
+        "width": 1520,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        -80
+      ],
+      "id": "8499ab12-ddc4-4df8-be93-87672d55c2f3",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "text": "={{ $('X').last().json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
+      "position": [
+        1620,
+        40
+      ],
+      "id": "dae31d55-d2e8-42af-bed0-1b8e24a3c668",
+      "name": "X1",
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "hxQJl0692eldyFml",
+          "name": "X account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1400,
+        40
+      ],
+      "id": "72611711-a40c-4e23-81c7-90918db32b43",
+      "name": "Wait 5 secs",
+      "webhookId": "e788017f-6690-4447-bfdb-cf177ce288ab"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Search Internet": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "X",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "X": {
+      "main": [
+        [
+          {
+            "node": "Update Campaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "X",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Fields": {
+      "main": [
+        [
+          {
+            "node": "Search Internet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Campaign": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Wait 5 secs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5 secs": {
+      "main": [
+        [
+          {
+            "node": "X1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b6f6ad3a-addd-47eb-a081-104024db594b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e7b2e0a942ed450b1adf0647ac936de062f7d72ee47e7fb912779fe8ac15a454"
+  },
+  "id": "8VwEMdhRo3okij2K",
+  "tags": []
+}
