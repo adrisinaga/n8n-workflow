@@ -1,0 +1,1206 @@
+{
+  "name": "Fluidflow Licensing Framework",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://anvil.example.com/api/generateContract",
+        "jsonParameters": true,
+        "options": {}
+      },
+      "name": "Send Anvil Contract1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        1420
+      ],
+      "id": "926773d9-be38-49fa-a194-ab37e8ca3a02"
+    },
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "name": "Create Xero Invoice1",
+      "type": "n8n-nodes-base.xero",
+      "typeVersion": 1,
+      "position": [
+        1080,
+        800
+      ],
+      "id": "74d81375-c975-43a0-91bd-93967b4d92f9",
+      "credentials": {
+        "xeroOAuth2Api": {
+          "id": "dgSOnxreFypApotC",
+          "name": "Xero account 2"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1miCU_IlGdC0MqzaRHcXGB27PIcaxLQ7oZryfUjv28BE",
+          "mode": "list",
+          "cachedResultName": "MasterLead TEMPLATE",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1miCU_IlGdC0MqzaRHcXGB27PIcaxLQ7oZryfUjv28BE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 240677149,
+          "mode": "list",
+          "cachedResultName": "MasterList",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1miCU_IlGdC0MqzaRHcXGB27PIcaxLQ7oZryfUjv28BE/edit#gid=240677149"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        500
+      ],
+      "id": "46eb1dae-8403-4d10-b9c8-80a59e6c6855",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "rItqaUNBLLkspZpt",
+          "name": "Google Sheets Trigger Fluidflow"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Trigger from Sheet",
+        "height": 80,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        520
+      ],
+      "id": "1b9ae3dd-8e76-4c2a-b7e8-01010cfeb9f5",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "channel": "fluidflow-licensing-bot",
+        "text": "=New FluidFlow quote for {{ $('Google Sheets Trigger').item.json.Email }} with SKU {{ $('Google Sheets Trigger').item.json.SKU_Selected }}. @brian please record Loom.",
+        "otherOptions": {},
+        "attachments": []
+      },
+      "name": "Slack Notification3",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        1180
+      ],
+      "id": "f2e9c86a-fdec-4708-87be-8b876f415d43",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "2Rdg95Inm3GKnpPF",
+          "name": "Slack Fluidflow Licensing Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "fcb.sinaga@gmail.com",
+        "subject": "={{ $json.message.blocks[0].elements[0].elements[0].text }}",
+        "emailType": "text",
+        "message": "=**Hello [CUSTOMER_NAME],**\n\nThank you for your interest in FluidFlow. Based on your requirements, here is your personalized licensing quote.  \n\n## **Quote Summary**  *\n*Package:** [PACKAGE_NAME]  **Users:** [USER_COUNT] engineers  \n**Quote Date:** [QUOTE_DATE]  \n**Quote ID:** [QUOTE_ID]  \n\n**Recommended**  \n\n**[LICENSE_TYPE] Licenses**  \n**[TOTAL_PRICE]**  \n[PRICE_BREAKDOWN]  **\nPricing Details:**\n[DETAILED_CALCULATION]  \n**Product SKU:** [SKU_CODE]\n**License Count:** [LICENSE_QUANTITY]  \n\n### **Why This Works for You**  \n- [REASON_1]\n- [REASON_2] \n- [REASON_3]  \n\n### **What's Included**  \n\n### **Ready to Proceed**  Get started with FluidFlow today  [**Review Contract**](https://www.claudeusercontent.com/[CONTRACT_LINK])  [**Schedule Demo**](https://www.claudeusercontent.com/[DEMO_LINK])  **Quote Valid Until:** \n[EXPIRY_DATE]**Terms:** \n\nNet 14 payment terms | Annual billing  \n\n### Questions About Your Quote  **Email:** sales@fluidflow.com  \n**Phone:** +44 (0)1296 481 220  **Web:** www.fluidflowinfo.com  \n\nReply to this email with any questions - we're here to help  \n\n**FluidFlow Design Suite**  \nComplete pipe flow simulation software",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -40,
+        1180
+      ],
+      "id": "6b0e957c-caac-4caa-bca7-c2218769edc4",
+      "name": "Gmail",
+      "webhookId": "b31d594a-8a0c-400a-97cd-8bf08ed28761",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "M6nTHbpwrC20G6Xz",
+          "name": "Gmail Adri "
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Insert dan Create Hubspot",
+        "height": 80,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        860
+      ],
+      "id": "86813303-efb0-4dba-a444-f148a136905b",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Notification",
+        "height": 80,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        180,
+        1180
+      ],
+      "id": "3ee73bdc-2b26-4b84-a922-c0fd0ae1d680",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "deal",
+        "operation": "update",
+        "dealId": {
+          "__rl": true,
+          "value": 91304314603,
+          "mode": "list",
+          "cachedResultName": "12345"
+        },
+        "updateFields": {
+          "description": "",
+          "stage": "closedwon"
+        }
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.1,
+      "position": [
+        760,
+        800
+      ],
+      "id": "84745e7d-17b0-4938-b5c5-2861715a4f68",
+      "name": "HubSpot",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "3M0n03YQzQaH3QgC",
+          "name": "Adri Hubspot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Output Data to Anvil",
+        "height": 100,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        200,
+        1480
+      ],
+      "id": "5295c5e7-f8db-456e-9ca0-d19dcd17f047",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "path": "5a289f6f-b672-48a7-9e67-844228104830",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        940,
+        1200
+      ],
+      "id": "dca0a7c1-67fd-4491-938a-06527bf91095",
+      "name": "Xero Paid",
+      "webhookId": "5a289f6f-b672-48a7-9e67-844228104830"
+    },
+    {
+      "parameters": {
+        "content": "## Webhook Xero Paid\n",
+        "height": 80,
+        "width": 300,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1220,
+        1220
+      ],
+      "id": "5e81349f-0347-4c9c-9d90-20338fd17dd5",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1miCU_IlGdC0MqzaRHcXGB27PIcaxLQ7oZryfUjv28BE",
+          "mode": "list",
+          "cachedResultName": "MasterLead TEMPLATE",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1miCU_IlGdC0MqzaRHcXGB27PIcaxLQ7oZryfUjv28BE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 240677149,
+          "mode": "list",
+          "cachedResultName": "MasterList",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1miCU_IlGdC0MqzaRHcXGB27PIcaxLQ7oZryfUjv28BE/edit#gid=240677149"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Funnel_Stage": "Paid"
+          },
+          "matchingColumns": [
+            "HubSpot_UID"
+          ],
+          "schema": [
+            {
+              "id": "HubSpot_UID",
+              "displayName": "HubSpot_UID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company_ID",
+              "displayName": "Company_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Domain",
+              "displayName": "Domain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "First_Name",
+              "displayName": "First_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last_Name",
+              "displayName": "Last_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "User_Type",
+              "displayName": "User_Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Funnel_Stage",
+              "displayName": "Funnel_Stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email_Verified",
+              "displayName": "Email_Verified",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Bounce_Status",
+              "displayName": "Bounce_Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Trial_Start_Date",
+              "displayName": "Trial_Start_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Converted_to_Paid",
+              "displayName": "Converted_to_Paid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Training_Attended",
+              "displayName": "Training_Attended",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Educational_User",
+              "displayName": "Educational_User",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Customer_Hub_User",
+              "displayName": "Customer_Hub_User",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "In_Success_Cycle",
+              "displayName": "In_Success_Cycle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Success_Onboard_Date",
+              "displayName": "Success_Onboard_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last_Login",
+              "displayName": "Last_Login",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Engagement_Score",
+              "displayName": "Engagement_Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UTM_Source",
+              "displayName": "UTM_Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UTM_Medium",
+              "displayName": "UTM_Medium",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UTM_Campaign",
+              "displayName": "UTM_Campaign",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Created_Date",
+              "displayName": "Created_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status_Detail",
+              "displayName": "Status_Detail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last_Modified_Date",
+              "displayName": "Last_Modified_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Data_Owner",
+              "displayName": "Data_Owner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Enrichment_Status",
+              "displayName": "Enrichment_Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Next_Action_Date",
+              "displayName": "Next_Action_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "FlowDesigner_Free_Entitlement",
+              "displayName": "FlowDesigner_Free_Entitlement",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "FlowDesigner_Interest",
+              "displayName": "FlowDesigner_Interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "FlowDesigner_Paid_User",
+              "displayName": "FlowDesigner_Paid_User",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Video_Sent",
+              "displayName": "Video_Sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Engineer_Notes",
+              "displayName": "Engineer_Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Referrer_Email",
+              "displayName": "Referrer_Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Referral_Date ",
+              "displayName": "Referral_Date ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Spots_Earned",
+              "displayName": "Spots_Earned",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Hub_Access_Type",
+              "displayName": "Hub_Access_Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Referral_Type",
+              "displayName": "Referral_Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Team_Challenge_Progress Certificate_Issued",
+              "displayName": "Team_Challenge_Progress Certificate_Issued",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Product_Line",
+              "displayName": "Product_Line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "SKU_Selected",
+              "displayName": "SKU_Selected",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Quote_Link",
+              "displayName": "Quote_Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Contract_Sent_Date",
+              "displayName": "Contract_Sent_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Contract_Signed_Date",
+              "displayName": "Contract_Signed_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Invoice_Status",
+              "displayName": "Invoice_Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        800,
+        1420
+      ],
+      "id": "49eafa53-aa9a-478d-8827-18af175fd5d1",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "PBsIoYh3gXGgBChp",
+          "name": "Google Sheets account Brian"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "deal",
+        "operation": "update",
+        "dealId": {
+          "__rl": true,
+          "value": 91304314603,
+          "mode": "list",
+          "cachedResultName": "12345"
+        },
+        "updateFields": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.1,
+      "position": [
+        1080,
+        1420
+      ],
+      "id": "498c93c2-f92e-40c8-a721-8c969c5f142e",
+      "name": "Update to Paid",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "3M0n03YQzQaH3QgC",
+          "name": "Adri Hubspot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Webhook Contract Signed in Anvil",
+        "height": 80,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        500
+      ],
+      "id": "c88924eb-464b-439a-b707-5e1bc75c4447",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        940,
+        540
+      ],
+      "id": "2855cf16-7e4e-49df-9189-0f270cdf8f0e",
+      "name": "Contact Anvil Webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graphql.useanvil.com",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Basic Q1NDOGFISklHOW9uUE15enI0dFU1RzBtYmpEdzRoOHg6"
+            },
+            {
+              "name": "Cookie",
+              "value": "sesh=0b7ab502ecaa98fe97275a949e458c26291a40b17500430e; sesh.sig=fof0SkGUDRfnrAgwyWMR5ed_meE; b_id=a42bc5f41b4452cf8e13f95428691cd7; b_id.sig=sohAWmxFBRFZLBK4XeXKSwYwWsI"
+            },
+            {
+              "name": "cookie",
+              "value": "sesh=0b7ab502ecaa98fe97275a949e458c26291a40b17500430e;sesh.sig=fof0SkGUDRfnrAgwyWMR5ed_meE;b_id=a42bc5f41b4452cf8e13f95428691cd7;b_id.sig=sohAWmxFBRFZLBK4XeXKSwYwWsI;"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"query\": \"mutation CreatePacket(\\n  $name: String!\\n  $isDraft: Boolean!\\n  $isTest: Boolean!\\n  $files: [EtchFile!]!\\n  $data: JSON!\\n  $signers: [JSON!]!\\n) {\\n  createEtchPacket(\\n    name: $name\\n    isDraft: $isDraft\\n    isTest: $isTest\\n    files: $files\\n    data: $data\\n    signers: $signers\\n  ) {\\n    eid\\n    documentGroup {\\n      signers { eid status }\\n    }\\n  }\\n}\\n\",\n  \"variables\": {\n    \"name\": \"IRS-W4 Packet – Adri\",\n    \"isDraft\": false,\n    \"isTest\": true,\n    \"files\": [\n      {\n        \"id\": \"IRS_W4\",\n        \"castEid\": \"7Ah5n3WUo7uyVdWvzJzp\"\n      }\n    ],\n    \"data\": {\n      \"payloads\": {\n        \"IRS_W4\": {\n          \"data\": {\n            \"customerCompanyName\": \"ACME Corp\",\n            \"customerName\": \"Adri Sinaga\",\n            \"customerAddress\": \"123 Main St #234\",\n            \"customerCity\": \"San Francisco\",\n            \"customerState\": \"CA\",\n            \"currentDate\": \"06/11/2025\",\n            \"signatureCustomer\": \"\"\n          }\n        }\n      }\n    },\n    \"signers\": [\n      {\n        \"id\": \"employee\",\n        \"name\": \"Adri Sinaga\",\n        \"email\": \"fcb.sinaga@gmail.com\",\n        \"signerType\": \"email\",\n        \"routingOrder\": 1,\n        \"fields\": [\n          {\n            \"fileId\": \"IRS_W4\",\n            \"fieldId\": \"signatureCustomer\"\n          }\n        ]\n      }\n    ]\n  }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1360,
+        1820
+      ],
+      "id": "3bf32959-7f7d-4978-becf-02907d34a9df",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "organizationId": "13fbdc3d-31d5-461f-9c9d-24bb553280a0",
+        "name": "={{ $json.Last_Name }}",
+        "additionalFields": {
+          "emailAddress": "={{ $json.Email }}"
+        }
+      },
+      "type": "n8n-nodes-base.xero",
+      "typeVersion": 1,
+      "position": [
+        -360,
+        820
+      ],
+      "id": "2a395128-2ea5-425e-be38-98fb9e6e366b",
+      "name": "Xero",
+      "credentials": {
+        "xeroOAuth2Api": {
+          "id": "MmArgDShAzxeAfB0",
+          "name": "Xero account Adri"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "organizationId": "13fbdc3d-31d5-461f-9c9d-24bb553280a0",
+        "type": "ACCREC",
+        "contactId": "={{ $json.ContactID }}",
+        "lineItemsUi": {
+          "lineItemsValues": [
+            {
+              "description": "={{ $('Limit').item.json.Product_Line }}",
+              "unitAmount": "5000",
+              "itemCode": "=",
+              "accountCode": "200",
+              "taxType": "NONE"
+            }
+          ]
+        },
+        "additionalFields": {
+          "date": "={{ $now }}",
+          "dueDate": "={{ $now }}",
+          "status": "SUBMITTED"
+        }
+      },
+      "type": "n8n-nodes-base.xero",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        820
+      ],
+      "id": "d709aff1-7059-4816-b3fe-a814904092d3",
+      "name": "Xero1",
+      "credentials": {
+        "xeroOAuth2Api": {
+          "id": "MmArgDShAzxeAfB0",
+          "name": "Xero account Adri"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        500
+      ],
+      "id": "c37d814c-2db9-4a94-bd55-c2e67370d8ca",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graphql.useanvil.com",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Basic Q1NDOGFISklHOW9uUE15enI0dFU1RzBtYmpEdzRoOHg6"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"query\": \"mutation ($signerEid: String!, $clientUserId: String!) {\\n    # use the eid and id on the signer return from the `createEtchPacket` mutation\\n    generateEtchSignURL (signerEid: $signerEid, clientUserId: $clientUserId)\\n}\",\n  \"variables\": {\n    \"signerEid\": \"8jpAcDf0nLbnY0ZWoMnq\",\n    \"clientUserId\": \"2227508\"\n  }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -820,
+        2180
+      ],
+      "id": "e7cc667f-61bc-4c47-9254-51c41e7c20ff",
+      "name": "HTTP Request3",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graphql.useanvil.com",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Basic Q1NDOGFISklHOW9uUE15enI0dFU1RzBtYmpEdzRoOHg6"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"query\": \"mutation (\\n    $name: String,\\n    $files: [EtchFile!],\\n    $isDraft: Boolean,\\n    $isTest: Boolean,\\n    $signatureEmailSubject: String,\\n    $signatureEmailBody: String,\\n    $signatureProvider: String,\\n    $signaturePageOptions: JSON,\\n    $signers: [JSON!],\\n    $data: JSON,\\n) {\\n    createEtchPacket (\\n        name: $name,\\n        files: $files,\\n        isDraft: $isDraft,\\n        isTest: $isTest,\\n        signatureEmailSubject: $signatureEmailSubject,\\n        signatureEmailBody: $signatureEmailBody,\\n        signatureProvider: $signatureProvider,\\n        signaturePageOptions: $signaturePageOptions,\\n        signers: $signers,\\n        data: $data\\n    ) {\\n        eid\\n        name\\n        detailsURL\\n        documentGroup {\\n            eid\\n            status\\n            signers {\\n                id\\n                eid\\n                name\\n                email\\n                status\\n                routingOrder\\n            }\\n        }\\n    }\\n}\",\n  \"variables\": {\n    \"name\": \"Important Packet of Forms\",\n    \"isDraft\": false,\n    \"isTest\": true,\n    \"signatureEmailSubject\": \"Test Packet\",\n    \"signatureEmailBody\": \"Please sign these forms as soon as possible. Thanks!\",\n    \"signatureProvider\": \"etch\",\n    \"signaturePageOptions\": {\n      \"title\": \"Test Packet\",\n      \"description\": \"Please soon as soon as posssible\",\n      \"style\": {\n        \"successColor\": \"#1985a1\",\n        \"infoColor\": \"#46494c\"\n      }\n    },\n    \"files\": [\n      {\n        \"id\": \"PDF_Template_IRS_W4\",\n        \"castEid\": \"XnuTZKVZg1Mljsu999od\"\n      }\n    ],\n    \"signers\": [\n      {\n        \"id\": \"signer1\",\n        \"name\": \"Sally Signer\",\n        \"email\": \"sally@example.com\",\n        \"fields\": [\n          {\n            \"fileId\": \"PDF_Template_IRS_W4\",\n            \"fieldId\": \"employeeSignature\"\n          },\n          {\n            \"fileId\": \"PDF_Template_IRS_W4\",\n            \"fieldId\": \"employeeSignatureDate\"\n          }\n        ],\n        \"signerType\": \"embedded\",\n        \"redirectURL\": \"https://www.useanvil.com/docs/api/e-signatures#redirecturl\",\n        \"enableEmails\": [\n          \"etchComplete\"\n        ]\n      }\n    ],\n    \"data\": {\n      \"payloads\": {\n        \"PDF_Template_IRS_W4\": {\n          \"textColor\": \"#0000CC\",\n          \"data\": {\n            \"name\": \"Sally Signer\",\n            \"address\": {\n              \"street1\": \"123 Main St #234\",\n              \"city\": \"San Francisco\",\n              \"state\": \"CA\",\n              \"zip\": \"94106\",\n              \"country\": \"US\"\n            },\n            \"ssn\": \"456454567\",\n            \"filingStatus\": \"Joint\",\n            \"under17Cost\": 2000,\n            \"otherDependentsCost\": 0,\n            \"totalDependentsCost\": 2000,\n            \"otherIncome\": 0,\n            \"otherDeductions\": 0,\n            \"extraWithholding\": 0,\n            \"employerName\": \"Awesome Co Inc\",\n            \"firstDateEmployment\": \"2021-01-12\",\n            \"employerEin\": \"897654321\",\n            \"headOfHousehold\": true,\n            \"employerAddress\": {\n              \"street1\": \"555 Market St\",\n              \"city\": \"San Francisco\",\n              \"state\": \"CA\",\n              \"zip\": \"94103\",\n              \"country\": \"US\"\n            }\n          }\n        }\n      }\n    }\n  }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1000,
+        2180
+      ],
+      "id": "34710f1c-168b-4b98-ac6a-fe746f9d65ab",
+      "name": "HTTP Request2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://app.useanvil.com/api/v1/fill/7Ah5n3WUo7uyVdWvzJzp.pdf",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -220,
+        2180
+      ],
+      "id": "2d481441-d439-4fc7-be6c-89e8dd0db3f1",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "pzvyXqipvRtWTVfI",
+          "name": "SalesFluidflow APIKEY"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        2180
+      ],
+      "id": "1ac4776b-cf8e-42cb-b3fd-85c5b0502b19",
+      "name": "When clicking ‘Test workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://app.useanvil.com/api/v1/generate-pdf",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n\t\"title\": \"Example Invoice\",\n\t\"type\": \"markdown\",\n    \"data\":  [\n        {\n            \"label\": \"Name\",\n            \"content\": \"Sally Smith\"\n        },\n        {\n            \"content\": \"Lorem **ipsum** dolor sit _amet_...\",\n            \"fontSize\": 12,\n            \"textColor\": \"#616161\"\n        },\n        {\n            \"content\": \"Lorem **ipsum** [dolor sit _amet_](https://useanvil.com)...\",\n            \"fontSize\": 12,\n            \"textColor\": \"#616161\"\n        },\n        {\n            \"table\": {\n                \"rows\": [\n                    [\"Description\", \"Quantity\", \"Price\"],\n                    [\"4x Large Wigets\", \"4\", \"$40.00\"],\n                    [\"10x Medium Sized Widgets in dark blue\", \"10\", \"$100.00\"],\n                    [\"6x Small Widgets in white\", \"6\", \"$60.00\"]\n                ],\n                \"columnOptions\": [\n                    { \"align\": \"left\", \"width\": \"60%\" },\n                    { \"align\": \"center\", \"width\": \"100px\" },\n                    { \"align\": \"right\" }\n                ],\n                \"firstRowHeaders\": true,\n                \"rowGridlines\": true,\n                \"columnGridlines\": true,\n                \"verticalAlign\": \"center\"\n            }\n        }\n    ],\n\t\"page\": {\n\t\t\"width\": \"612px\",\n\t\t\"height\": \"792px\",\n\t\t\"margin\": \"50px\",\n\t\t\"marginTop\": \"30px\",\n\t\t\"marginBottom\": \"30px\",\n\t\t\"marginLeft\": \"60px\",\n\t\t\"marginRight\": \"60px\",\n\t\t\"pageCount\": \"bottomCenter\"\n\t},\n\t\"fontSize\": 16,\n\t\"textColor\": \"#171717\",\n\t\"includeTimestamp\": true,\n\t\"logo\": {\n\t\t\"src\": \"https://example.com/mtnlogo.png\",\n\t\t\"maxWidth\": 200,\n\t\t\"maxHeight\": 200\n\t}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -480,
+        2180
+      ],
+      "id": "dfed1929-4e0f-4514-bd05-478c1f56a3a1",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "pzvyXqipvRtWTVfI",
+          "name": "SalesFluidflow APIKEY"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Send Anvil Contract1": {
+      "main": [
+        []
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Notification3": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "main": [
+        [
+          {
+            "node": "Send Anvil Contract1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot": {
+      "main": [
+        [
+          {
+            "node": "Create Xero Invoice1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Xero Paid": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Update to Paid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contact Anvil Webhook": {
+      "main": [
+        [
+          {
+            "node": "HubSpot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Xero": {
+      "main": [
+        [
+          {
+            "node": "Xero1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Xero",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Xero1": {
+      "main": [
+        [
+          {
+            "node": "Slack Notification3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "dee7b25e-21a9-43d6-98d4-f7e093a5ed1d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7ff6d94ecf94ba134146ef7d28ffb863f2e40767c6adfd490ff08c52e7d17efe"
+  },
+  "id": "cdTv2D1Y5OFQjW4K",
+  "tags": []
+}
