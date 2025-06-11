@@ -1,0 +1,1954 @@
+{
+  "name": "Website Sitemap Scraper to Notion Integration",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        60,
+        795
+      ],
+      "id": "01130d79-b7ba-4855-8cfd-359a78e09d6a",
+      "name": "When chat message received",
+      "webhookId": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aa9156b4-7556-4229-938b-38e0d9391015",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "sitemap",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        876,
+        795
+      ],
+      "id": "ec1fe391-5970-41fa-8ff0-d9b809d5330c",
+      "name": "If sitemap exists"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.message.content.baseUrl }}/robots.txt",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        656,
+        795
+      ],
+      "id": "d5538f4e-d4d6-4e52-a85b-446ac9501908",
+      "name": "Check robots",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "## robots.txt\n\nWebsites use robots to tell google what to scrape and not scrape\n\nMost businesses use this",
+        "height": 400,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        586,
+        555
+      ],
+      "id": "308ac1e0-f8bd-4efe-8b8a-fad7ee2f1964",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## sitemap.xml\n\nThis is what we want. This gives us a directory of the website.",
+        "height": 400,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        806,
+        555
+      ],
+      "id": "6ae02be6-aa53-4de0-9705-a57f0d35765d",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.message.content.sitemap }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1472,
+        395
+      ],
+      "id": "4489a520-3555-43f7-bf99-4f5f8bf71038",
+      "name": "HTTP Request",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "output the sitemap value in json format of this structure:\n\n{\"sitemap\":\"www.example.com/sitemap.xml:}\n\nNote, only output one single sitemap value. If there are multiple, make the best choice on which is the correct one to use",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.data }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1096,
+        395
+      ],
+      "id": "800b6a4a-f378-4049-b93c-4bc6d7657409",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "lOIiUa4BXzDNMMOt",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "extract each of the seperate loc elements and return a JSON object as below, make sure that the first key value pair identifies if the pathways are regular urls or xml:\n\n{\n\"pathway\": \"xml\"\n\"loc1\":\"example1.com.xml\",\n\"loc2\":\"example2.com.xml\",\n\"loc3\":\"example3.com.xml\"\n}\n\nor\n\n\n{\n\"pathway\": \"url\"\n\"loc1\":\"example1.com\",\n\"loc2\":\"example2.com\",\n\"loc3\":\"example3.com\"\n}\n",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.data }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1912,
+        745
+      ],
+      "id": "acfb29aa-63c4-4e82-9735-eccdff620367",
+      "name": "OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "lOIiUa4BXzDNMMOt",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const content = $input.first().json.message.content;\n\n// Extract all `loc1`, `loc2`, etc., into an array\nconst urls = Object.values(content);\n\n// Return each URL as a separate item\nreturn urls.map(url => ({\n  json: { url }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2508,
+        995
+      ],
+      "id": "40a52334-8c5d-4b06-8e03-d9de87e62c16",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        2948,
+        995
+      ],
+      "id": "6fb681a3-2063-46a7-a8ae-2b5f075f7fda",
+      "name": "XML",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are a URL normalization assistant. Your task is to convert any input URL into its **standard base URL format** and return the result as JSON.\n\nNormalization Rules:\n1. Ensure the URL starts with `https://` (add it if missing).\n2. Remove `www.` unless it is critical for the domain's identity.\n3. Remove everything after the domain (paths, query strings, fragments).\n4. Preserve subdomains (e.g., `blog.example.com` → `https://blog.example.com`).\n5. Convert the domain part to lowercase.\n6. Output the result in JSON format as:\n   {\n     \"baseUrl\": \"https://example.com\"\n   }\n\nExamples:\nInput: `n8n.io/path/page`\nOutput: `{ \"baseUrl\": \"https://n8n.io\" }`\n\nInput: `http://www.Example.COM/query=1`\nOutput: `{ \"baseUrl\": \"https://example.com\" }`\n\nReturn **only the JSON object** in the output. No additional text or explanations.\n",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.chatInput }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        280,
+        795
+      ],
+      "id": "789b310e-2542-41e8-ab3c-374f7169e138",
+      "name": "OpenAI2",
+      "credentials": {
+        "openAiApi": {
+          "id": "lOIiUa4BXzDNMMOt",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Xml check\n\nSome websites have 2x sitemap/ xml pages as they have categories, more basic websites will just have one xml",
+        "height": 400,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2218,
+        505
+      ],
+      "id": "73ff4409-02ea-4d5e-be1f-58e0fbdc4a19",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b9a4d5b0-2385-49cd-9228-df1c56284cf1",
+              "leftValue": "={{ $json.message.content.pathway }}",
+              "rightValue": "url",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2288,
+        745
+      ],
+      "id": "8f8a507f-f381-4d5e-8764-9e6487858e3b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('OpenAI1').first().json.message;\n\nconst content = data.content;\n\nconst urls = [];\n\nObject.keys(content).forEach(key => {\n  if (key.startsWith('loc')) {\n    urls.push({ json: { url: content[key] } });\n  }\n});\n\nreturn urls;\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2508,
+        495
+      ],
+      "id": "88ad166d-462c-43fa-8d6a-c31600b05ddb",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "html": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        3984,
+        770
+      ],
+      "id": "1c367b3a-5217-4877-94ce-cedc804d4c8a",
+      "name": "Markdown1",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('OpenAI2').item.json.message.content.baseUrl }}/sitemap.xml",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1472,
+        595
+      ],
+      "id": "ae2c954b-02fd-445b-b648-3e7f76ff657f",
+      "name": "HTTP Request4",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('OpenAI2').item.json.message.content.baseUrl }}/site-map.xml",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1472,
+        995
+      ],
+      "id": "26b2e35a-1322-496e-8422-ec037dc59ffc",
+      "name": "HTTP Request5",
+      "executeOnce": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('OpenAI2').item.json.message.content.baseUrl }}/sitemap_index.xml",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1472,
+        795
+      ],
+      "id": "b4aef4a0-6557-43fd-898d-c892af54fa99",
+      "name": "HTTP Request6",
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('OpenAI2').item.json.message.content.baseUrl }}/sitemap.json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1472,
+        1195
+      ],
+      "id": "1b92c683-7e13-4a28-99fc-0772548404c2",
+      "name": "HTTP Request7",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1692,
+        745
+      ],
+      "id": "0403bd47-6579-40fc-946e-3e2879372e86",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) Read all incoming items\nconst items = $input.all();\n\n// 2) Markdown → plain‑text helper\nfunction convertMarkdownToPlainText(md) {\n  let text = String(md);\n  // Remove links & images\n  text = text\n    .replace(/\\[([^\\]]+)\\]\\([^)]+\\)/g, '$1')\n    .replace(/!\\[([^\\]]*)\\]\\([^)]+\\)/g, '$1');\n  // Remove headers, bold/italic, lists\n  text = text\n    .replace(/^(#+)\\s*(.*)/gm, '$2')\n    .replace(/(\\*\\*|\\*|__|_)/g, '')\n    .replace(/^\\s*[-*+]\\s+/gm, '');\n  // Collapse multiple blank lines\n  text = text.replace(/\\n\\s*\\n+/g, '\\n\\n');\n  return text.trim();\n}\n\n// 3) Extract the first “real” paragraph (skip menus, headings, logos, etc.)\nfunction extractMainParagraph(md) {\n  const plain = convertMarkdownToPlainText(md);\n  // Split into paragraphs by blank lines\n  const paras = plain.split(/\\n{2,}/).map(p => p.trim()).filter(p => p);\n  \n  // Define a regex matching common nav/menu items\n  const navPattern = /^(company logo|knowledge base|go to fluidflowinfo\\.com|back to home|technical support|learning|get started|installation|licen[cs]es?|webinars|troubleshooting|white paper|modelling|faqs|video tutorials|training)$/i;\n  \n  // Find the first paragraph that isn't pure navigation and is reasonably long\n  for (const p of paras) {\n    if (!navPattern.test(p) && p.length > 30) {\n      return p;\n    }\n  }\n  \n  // Fallback to the very first paragraph if nothing else\n  return paras[0] || '';\n}\n\n// 4) Build combined output\nlet combined = items.map((item, idx) => {\n  // Grab whatever field holds your raw markdown/html\n  const raw = item.data || item.content || item.text || JSON.stringify(item);\n  \n  // Extract just the “yellow” paragraph\n  const main = extractMainParagraph(raw);\n  \n  return `Page ${idx+1}\\n──────────────────\\n\\n${main}\\n\\n\\n`;\n}).join('\\n\\n');\n\n// 5) Return as a single JSON item\nreturn [{\n  json: {\n    content: combined\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3960,
+        -20
+      ],
+      "id": "926bfb2d-36bd-4aac-b3a3-9f67230e4e8f",
+      "name": "Strip"
+    },
+    {
+      "parameters": {
+        "jsCode": "function extractAllLocs(data) {\n    const locs = [];\n\n    function findLocs(obj) {\n        if (!obj) return;\n\n        // If it's an object, check for loc key and continue recursion\n        if (typeof obj === 'object') {\n            for (const key in obj) {\n                if (key === 'loc' && typeof obj[key] === 'string') {\n                    locs.push(obj[key]);\n                } else {\n                    findLocs(obj[key]);\n                }\n            }\n        }\n        // If it's an array, loop through each item\n        else if (Array.isArray(obj)) {\n            obj.forEach(findLocs);\n        }\n    }\n\n    findLocs(data);\n    return locs.map(url => ({ url }));\n}\n\n// Usage in n8n:\nconst data = $input.first().json.urlset; // Extracting from the urlset\n\nconst urls = extractAllLocs(data);\n\nreturn urls.map(item => ({ json: item }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3168,
+        995
+      ],
+      "id": "dd206083-5986-4b5a-9856-64fae6e6483e",
+      "name": "find URLs"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1
+            }
+          },
+          "allowUnauthorizedCerts": false,
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3686,
+        770
+      ],
+      "id": "c0b5718c-a0a0-43ff-bf4b-cd68ea57df73",
+      "name": "GET URLs",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all input items\nconst items = $input.all();\nif (items.length > 1) {\n    console.warn(\"Multiple upstream items detected; only using first.\");\n}\n\n// Function to convert markdown to plain text\nfunction convertMarkdownToPlainText(markdown) {\n  // Ensure we're working with a string\n  let plainText = String(markdown);\n  \n  // Remove links: [text](URL)\n  plainText = plainText.replace(/\\[([^\\]]+)\\]\\([^\\)]+\\)/g, '$1');\n  \n  // Remove images: ![alt text](URL)\n  plainText = plainText.replace(/!\\[([^\\]]*)\\]\\([^\\)]+\\)/g, '$1');\n  \n  // Remove headers: # Header\n  plainText = plainText.replace(/(#+)\\s*(.*)/g, '$2');\n  \n  // Remove bold and italic formatting\n  plainText = plainText.replace(/\\*\\*|\\*|__|_/g, '');\n  \n  // Remove HTML special characters\n  plainText = plainText.replace(/([<>])/g, '');\n  \n  // Remove extra line breaks\n  plainText = plainText.replace(/\\n\\s*\\n/g, '\\n');\n  \n  // Remove bullet points or numbered list formatting\n  plainText = plainText.replace(/^\\s*[-*+]\\s+/gm, '');\n  \n  return plainText.trim();\n}\n\n// Process all items and combine them with page numbers and clear formatting\nconst combinedContent = items.map((item, index) => {\n  let content;\n  if (typeof item === 'object' && item !== null) {\n    content = item.data || item.content || item.text || JSON.stringify(item);\n  } else {\n    content = String(item);\n  }\n  \n  const pageNumber = index + 1;\n  const processedContent = convertMarkdownToPlainText(content);\n  \n  return `Page ${pageNumber}\\n──────────────────\\n\\n${processedContent}\\n\\n\\n`;\n}).join('\\n\\n'); // Double line breaks between pages\n\n// Return with both raw content and formatted content\nreturn [{\n  json: {\n    content: combinedContent,\n    rawContent: items.map((item, index) => ({\n      pageNumber: index + 1,\n      content: convertMarkdownToPlainText(String(item.data || item.content || item.text || item))\n    }))\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4204,
+        770
+      ],
+      "id": "4c8969fd-8fe3-43bf-a1f0-b6b4837e80ee",
+      "name": "Strip1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2728,
+        995
+      ],
+      "id": "c0016913-e2f1-40f8-bffb-5ba3d887fe8d",
+      "name": "GET XML",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1
+            }
+          },
+          "allowUnauthorizedCerts": false,
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2940,
+        -20
+      ],
+      "id": "3dfe9618-8317-445f-9de0-c112c12a7e94",
+      "name": "GET URLs1",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil semua input\nconst items = $input.all();\n\n// Siapkan log/debug info\nconst debugInfo = {\n    itemCount: items.length,\n    warning: null,\n    details: []\n};\n\n// Kalau lebih dari satu, beri warning\nif (items.length > 1) {\n    debugInfo.warning = `⚠ Warning: Detected ${items.length} upstream items; processing only the first one.`;\n} else {\n    debugInfo.warning = `✅ Only one upstream item detected; proceeding normally.`;\n}\n\n// Proses hanya item pertama (untuk keamanan)\nconst firstItem = items[0].json;\n\n// Tambahkan detail info ke output\ndebugInfo.details.push({\n    firstItemKeys: Object.keys(firstItem),\n    firstItemSample: JSON.stringify(firstItem).substring(0, 200) + '...'\n});\n\n// Return output supaya terlihat di UI n8n\nreturn [{\n    json: {\n        debugInfo: debugInfo,\n        processedData: {\n            message: \"This is your processed result here.\",\n            originalItem: firstItem\n        }\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4640,
+        780
+      ],
+      "id": "b6a4a7f7-8369-437c-ae25-bd88535b1ce1",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil semua input\nconst items = $input.all();\n\n// Siapkan log/debug info\nconst debugInfo = {\n    itemCount: items.length,\n    warning: null,\n    details: []\n};\n\n// Kalau lebih dari satu, beri warning\nif (items.length > 1) {\n    debugInfo.warning = `⚠ Warning: Detected ${items.length} upstream items; processing only the first one.`;\n} else {\n    debugInfo.warning = `✅ Only one upstream item detected; proceeding normally.`;\n}\n\n// Proses hanya item pertama (untuk keamanan)\nconst firstItem = items[0].json;\n\n// Tambahkan detail info ke output\ndebugInfo.details.push({\n    firstItemKeys: Object.keys(firstItem),\n    firstItemSample: JSON.stringify(firstItem).substring(0, 200) + '...'\n});\n\n// Return output supaya terlihat di UI n8n\nreturn [{\n    json: {\n        debugInfo: debugInfo,\n        processedData: {\n            message: \"This is your processed result here.\",\n            originalItem: firstItem\n        }\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4400,
+        -20
+      ],
+      "id": "36721e60-4258-4b6b-af2a-74a29213e5cb",
+      "name": "Code5",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Dapatkan seluruh HTML (dengan <head>) dari input\nconst fullHtml = $input.first().json.content || \"\";\n\n// 2. Ekstrak atribut content dari tag <meta name=\"description\"> menggunakan regex yang lebih tepat\nconst contentMatch = fullHtml.match(/<meta\\s+name=\"description\"\\s+content=\"([^\"]*)\"/i);\nconst pageContent = contentMatch? contentMatch[1].trim() : \"\";\n\n// 3. URL dasar untuk membangun URL per halaman\nconst sourceDomain = $node[\"Loop Over Items\"].json.url.replace(/\\/$/, \"\");\n\n// 4. Bagi menjadi blok setelah setiap tanda “Page N” (jika ada)\nconst pagesRaw = fullHtml.split(/Page \\d+/).slice(1);\n\nconst results = [];\n\npagesRaw.forEach((block, index) => {\n    // 5. Ambil payload JSON di blok ini\n    const jsonMatch = block.match(/\\{[\\s\\S]*\\}/);\n    if (!jsonMatch) {\n        console.error(`No JSON found on page ${index + 1}`);\n        return;\n    }\n\n    let pageData;\n    try {\n        pageData = JSON.parse(jsonMatch[0]);\n    } catch (e) {\n        console.error(`Failed to parse JSON on page ${index + 1}`);\n        return;\n    }\n\n    // 6. Ekstrak raw Markdown/data dari JSON itu (hanya untuk judul)\n    const rawData = pageData.json?.data || \"\";\n\n    // 7. Turunkan Judul (H1, “X – Y”, atau fallback)\n    let title = \"\";\n    const h1 = rawData.match(/^#\\s*(.+)$/m);\n    if (h1) {\n        title = h1[1].trim();\n    } else {\n        const lines = rawData\n           .split(/\\r?\\n/)\n           .map(l => l.trim())\n           .filter(l => l.length > 0);\n\n        title =\n            lines.find(l => /^\\w.*\\s-\\s.*\\w/.test(l)) ||\n            lines.find(\n                l =>\n                    !/^(company logo|knowledge base|go to fluidflowinfo\\.com)$/i.test(\n                        l\n                    )\n            ) ||\n            \"Untitled Page\";\n    }\n\n    // 8. Push item output\n    results.push({\n        json: {\n            Title:       title,\n            URL:         sourceDomain,\n            ContentType: \"Web Page\",\n            ScrapedDate: $now.toISODate(),\n            Content:     pageContent\n        }\n    });\n});\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4180,
+        -20
+      ],
+      "id": "80532c89-109d-4e35-86f4-583d9a0bfe69",
+      "name": "Code Parsing to Data",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil input pertama\nconst rawContent   = $input.first().json.content;\n\n// Source info\nconst sourceDomain = $('OpenAI2').first().json.message.content.baseUrl;\nconst baseUrl      = sourceDomain.replace(/\\/$/, '');  // buang trailing slash kalau ada\n\n// Pisahkan per page (deteksi \"Page 1\", \"Page 2\", dst)\nconst pagesRaw = rawContent.split(/Page \\d+/).slice(1);\n\nconst results = [];\n\npagesRaw.forEach((block, index) => {\n  // Cari JSON di dalam tiap blok\n  const jsonMatch = block.match(/\\{[\\s\\S]*\\}/);\n  if (!jsonMatch) {\n    console.error(`No JSON found on page ${index + 1}`);\n    return;\n  }\n\n  // Parse JSON-nya\n  let pageData;\n  try {\n    pageData = JSON.parse(jsonMatch[0]);\n  } catch (e) {\n    console.error(`Failed to parse JSON on page ${index + 1}`);\n    return;\n  }\n\n  // Bikin URL per halaman (misal: https://libirrificio.com.au/1)\n  const pageUrl = `${baseUrl}/${index + 1}`;\n\n  // Ekstrak title: hilangkan protocol + \"www.\", lalu ambil sebelum \".com\"\n  const title = pageUrl\n    .replace(/^https?:\\/\\/(?:www\\.)?/, '')  // hapus https://, http://, dan www.\n    .split('.com')[0];                      // ambil sebelum \".com\"\n\n    // Ambil dan bersihkan content menjadi plain text\n  const rawData = pageData.json?.data || '';\n  const textContent = rawData\n    .replace(/\\\\n/g, ' ')    // ganti literal \"\\n\" jadi spasi\n    .replace(/\\s+/g, ' ')    // collapse whitespace\n    .trim();\n  \n  // Push hasilnya\n  results.push({\n    json: {\n      Title:        title,\n      URL:          pageUrl,\n      ContentType:  \"Web Page\",\n      ScrapedDate:  $now.toISODate(),\n      SourceDomain: sourceDomain,\n      Content: textContent\n    }\n  });\n});\n\n// Kembalikan array hasil\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4424,
+        770
+      ],
+      "id": "5e1d4438-1b65-494a-b909-251309f4e8e5",
+      "name": "Code Parsing to Data1"
+    },
+    {
+      "parameters": {
+        "content": "## Checker\n",
+        "height": 1080,
+        "width": 2380,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -264,
+        275
+      ],
+      "id": "8dbccdff-7e2c-4a25-9cd1-4385334c9097",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "1ea8fb7c-51ac-804c-9bd2-f86d7d2220f2",
+          "mode": "list",
+          "cachedResultName": "Web Scraper",
+          "cachedResultUrl": "https://www.notion.so/1ea8fb7c51ac804c9bd2f86d7d2220f2"
+        },
+        "title": "={{ $('OpenAI4').item.json.message.content.title }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "URL|url",
+              "ignoreIfEmpty": true,
+              "urlValue": "={{ $('Loop Over Items1').item.json.url }}"
+            },
+            {
+              "key": "Status|status",
+              "statusValue": "Complete"
+            },
+            {
+              "key": "Last Scraped|date",
+              "date": "={{ $now }}"
+            },
+            {
+              "key": "Error Message|rich_text",
+              "textContent": "="
+            },
+            {
+              "key": "URL|url",
+              "urlValue": "={{ $('Loop Over Items1').item.json.url }}"
+            },
+            {
+              "key": "Content Type|title",
+              "title": "={{ $('Code4').item.json.processedData.originalItem.ContentType }}"
+            },
+            {
+              "key": "TItle|rich_text",
+              "textContent": "={{ $('OpenAI4').item.json.message.content.title }}"
+            }
+          ]
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "type": "heading_1",
+              "textContent": "={{ $('OpenAI4').item.json.message.content.title }}"
+            },
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "={{ $json.processedData.originalItem.Content }}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        5460,
+        845
+      ],
+      "id": "ba5f2b61-c3a5-4684-8aa0-a09f53ef2860",
+      "name": "Notion2",
+      "credentials": {
+        "notionApi": {
+          "id": "4HOQ7Ynj7AmIzylv",
+          "name": "Notion account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Parser\n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/sticky-notes/)",
+        "height": 1900,
+        "width": 4820,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        -160
+      ],
+      "id": "64c653f6-3494-4598-8794-171bb06a4949",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b96d3ac2-9322-4de5-a34f-e96ad15e66eb",
+              "name": "processedData.originalItem.Content",
+              "value": "={{ $json.message.content.plainTextWebsiteCopy.slice(0,1999) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5240,
+        770
+      ],
+      "id": "8d0c2273-6f06-436c-98e4-fed01b4a3de0",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "1ea8fb7c-51ac-804c-9bd2-f86d7d2220f2",
+          "mode": "list",
+          "cachedResultName": "Web Scraper",
+          "cachedResultUrl": "https://www.notion.so/1ea8fb7c51ac804c9bd2f86d7d2220f2"
+        },
+        "title": "={{ $('OpenAI3').item.json.message.content.title }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "URL|url",
+              "urlValue": "={{ $('Code5').item.json.processedData.originalItem.URL }}"
+            },
+            {
+              "key": "Last Scraped|date",
+              "date": "={{ $now}}"
+            },
+            {
+              "key": "Error Message|rich_text",
+              "textContent": "={{ $('Code5').item.json.debugInfo.warning }}"
+            },
+            {
+              "key": "Content Type|title",
+              "title": "={{ $('Code5').item.json.processedData.originalItem.ContentType }}"
+            },
+            {
+              "key": "TItle|rich_text",
+              "textContent": "={{ $('OpenAI3').item.json.message.content.title }}"
+            },
+            {
+              "key": "Status|status",
+              "statusValue": "Complete"
+            },
+            {
+              "key": "Section|rich_text",
+              "textContent": "={{ $('HTML').item.json.section.isNotEmpty()?$('HTML').item.json.section:\"\" }}"
+            }
+          ]
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "type": "heading_1",
+              "textContent": "={{ $('OpenAI3').item.json.message.content.title }}"
+            },
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "={{ $('OpenAI3').item.json.message.content.content }}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        4880,
+        40
+      ],
+      "id": "a1c07deb-4cf7-4a90-9698-752be875c173",
+      "name": "Notion1",
+      "retryOnFail": true,
+      "credentials": {
+        "notionApi": {
+          "id": "4HOQ7Ynj7AmIzylv",
+          "name": "Notion account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b96d3ac2-9322-4de5-a34f-e96ad15e66eb",
+              "name": "processedData.originalItem.Content",
+              "value": "={{ $('OpenAI3').item.json.message.content.content.slice(0, 1999) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4620,
+        -20
+      ],
+      "id": "44458fb2-bc97-47d2-96b5-bab44b8e8d52",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2700,
+        -20
+      ],
+      "id": "32b615f2-4e3e-4975-bff8-28b864eb96d8",
+      "name": "Loop Over Items",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are a helpful, intelegent web scrapping assistant.",
+              "role": "system"
+            },
+            {
+              "content": "=You are given two attributes from a Markdown page:  \n  • title       – a string \n  • content     – a string containing Markdown \n\nYour job is to output a single JSON object with these properties:\n{\n  \"title\":      \"<exact title string>\",\n  \"content\":    \"<full page content as plain text, no Markdown or HTML>\",\n  \"oneLineSummary\": \"<one-sentence summary of what this page is about>\",\n  \"images\": [\n    \"<absolute URL of first image>\",\n    \"<absolute URL of second image>\",\n    ...\n  ]\n}\n\nRequirements:\n1. Extract **every** image reference in the  content (in the order they appear, don't include icon, banner, etc).  \n2. If an image’s URL is relative, prepend it with the page’s base URL (provided below) to form a valid absolute URL.  \n3. Do not include any other fields.  \n\nUse this base URL for relative→absolute conversions:  {{ $('Loop Over Items').item.json.url }}\n"
+            },
+            {
+              "content": "={{ $('GET URLs1').item.json.data }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        3600,
+        -20
+      ],
+      "id": "575c5491-9ef1-4bd3-870c-5ee8011498fe",
+      "name": "OpenAI3",
+      "credentials": {
+        "openAiApi": {
+          "id": "lOIiUa4BXzDNMMOt",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        3388,
+        995
+      ],
+      "id": "589eca97-aa8c-47e9-a12b-de5224f6f354",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are a helpful, intelligent web scraping assistant.",
+              "role": "system"
+            },
+            {
+              "content": "=Your task is to take the raw Markdown of a website and convert it into structured data. Use the following format: \n\n{\n  \"title\":\"result from attribute title\",\n  \"plainTextWebsiteCopy\":\"a long string containing just the text of the site, no formatting\",\n  \"oneLineSummary\":\"brief summarization of what the site is about\",\n  \"images\":\"<array of image on page content>\"\n}\n\nYour website URL, for the relative => absolute conversions, is {{ $json.processedData.originalItem.SourceDomain }}"
+            },
+            {
+              "content": "={{ $json.processedData.originalItem.Content }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        4864,
+        770
+      ],
+      "id": "54015384-752f-4784-8716-0fb4b6aec05e",
+      "name": "OpenAI4",
+      "credentials": {
+        "openAiApi": {
+          "id": "lOIiUa4BXzDNMMOt",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "images",
+              "cssSelector": "img",
+              "returnValue": "attribute",
+              "attribute": "src",
+              "returnArray": true
+            },
+            {
+              "key": "videoUrls",
+              "cssSelector": "video > source,\nvideo[src],\niframe[src*=\"youtube.com\"],\niframe[src*=\"vimeo.com\"],\nembed[src],\nobject[data]\n",
+              "returnValue": "attribute",
+              "attribute": "src",
+              "returnArray": true
+            },
+            {
+              "key": "root",
+              "cssSelector": "span[itemprop=\"name\"]:last-child,\nspan[itemprop=\"name\"]"
+            },
+            {
+              "key": "section",
+              "cssSelector": "li[itemprop=\"itemListElement\"]:last-of-type span[itemprop=\"name\"]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        3160,
+        -20
+      ],
+      "id": "fd136020-0181-477a-b13e-52b48985c10c",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) Grab your images array (from the HTML node)\nconst urlImages = $input.first().json.images || [];\nconst urlVideos = $input.first().json.videoUrls || [];\n\n// 2) Build a Notion-compatible children array\nconst children = urlImages.map(url => ({\n  type: 'image',\n  image: {\n    type: 'external',\n    external: { url },\n  },\n}));\n\nconst childrenVideo = urlVideos.map(url => ({\n  type: 'video',\n  image: {\n    type: 'external',\n    external: { url },\n  },\n}));\n\n// 3) Return it (include pageId if you have it in your JSON)\nreturn [{\n  json: {\n    // pageId: items[0].json.pageId,  // ← replace or remove if your pageId lives elsewhere\n    children,\n    childrenVideo\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3380,
+        -20
+      ],
+      "id": "a1ab7545-f56b-459e-bc41-c4f715845e8b",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "blockId": {
+          "__rl": true,
+          "value": "={{ $('Notion1').item.json.id }}",
+          "mode": "id"
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "type": "image",
+              "url": "={{ $json.imageUrl }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        5880,
+        200
+      ],
+      "id": "ef233137-3df2-4f99-92aa-b1153c405636",
+      "name": "Notion",
+      "credentials": {
+        "notionApi": {
+          "id": "4HOQ7Ynj7AmIzylv",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "73902299-9f58-4a0d-8199-ec7493d0c01d",
+              "leftValue": "={{ $('Code1').item.json.children }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "array",
+                "operation": "lengthGt",
+                "rightType": "number"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5160,
+        100
+      ],
+      "id": "d3dd7da9-a497-4b05-8453-26098560bafc",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) Grab your images array (from the HTML node)\nconst urls = $('HTML').first().json.images || [];\n\n// 2) Build a Notion-compatible children array\nconst children = urls.map(url => ({\n  type: 'image',\n  image: {\n    type: 'external',\n    external: { url },\n  },\n}));\n\n// 3) Return it (include pageId if you have it in your JSON)\nreturn [{\n  children\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5400,
+        140
+      ],
+      "id": "966b1882-e760-4f11-b5ee-8dc9a6e45879",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil array original\nconst children = $input.first().json.children || [];\n\n// Buat satu item per gambar\nreturn children.map(child => ({\n  json: {\n    pageId: items[0].json.id,                // atau field mana pun yang berisi ID halaman\n    imageUrl: child.image.external.url        // URL gambar\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5640,
+        160
+      ],
+      "id": "f4f4cf6a-d178-4b9e-a75b-cbbcf323202c",
+      "name": "Code6"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "blockId": {
+          "__rl": true,
+          "value": "={{ $('Notion1').item.json.id }}",
+          "mode": "id"
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "type": "image",
+              "url": "={{ $json.imageUrl }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        6340,
+        1020
+      ],
+      "id": "f1812b36-35c0-47b5-a967-6ca75420a4b5",
+      "name": "Notion3",
+      "credentials": {
+        "notionApi": {
+          "id": "4HOQ7Ynj7AmIzylv",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "73902299-9f58-4a0d-8199-ec7493d0c01d",
+              "leftValue": "={{ $('OpenAI4').item.json.message.content.images }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "array",
+                "operation": "lengthGt",
+                "rightType": "number"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5680,
+        920
+      ],
+      "id": "8ce1fd02-b0e8-41d8-a68b-526147a29ebc",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) Grab your images array (from the HTML node)\nconst urls = $('HTML').first().json.images || [];\n\n// 2) Build a Notion-compatible children array\nconst children = urls.map(url => ({\n  type: 'image',\n  image: {\n    type: 'external',\n    external: { url },\n  },\n}));\n\n// 3) Return it (include pageId if you have it in your JSON)\nreturn [{\n  children\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5900,
+        920
+      ],
+      "id": "1b95203a-c50a-4011-a7a3-ce4d94da76ee",
+      "name": "Code7"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil array original\nconst children = items[0].json.children || [];\n\n// Buat satu item per gambar\nreturn children.map(child => ({\n  json: {\n    pageId: items[0].json.id,                // atau field mana pun yang berisi ID halaman\n    imageUrl: child.image.external.url        // URL gambar\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6140,
+        960
+      ],
+      "id": "9e852816-99b7-4542-8b4a-e1eac3ac0268",
+      "name": "Code8"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f6b62400-ab7d-44d4-8941-2579c66ff8f4",
+              "leftValue": "={{ $('Code1').item.json.childrenVideo }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "array",
+                "operation": "lengthGt",
+                "rightType": "number"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        6100,
+        220
+      ],
+      "id": "c6f0faa2-52ce-4d63-a846-88e45b962986",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) Grab your images array (from the HTML node)\nconst urls = $('HTML').first().json.videoUrls || [];\n\n// 2) Build a Notion-compatible children array\nconst children = urls.map(url => ({\n  type: 'video',\n  video: {\n    type: 'external',\n    external: { url },\n  },\n}));\n\n// 3) Return it (include pageId if you have it in your JSON)\nreturn [{\n  children\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6340,
+        280
+      ],
+      "id": "0cc372e2-1ed2-4fcc-863a-4740c125bb12",
+      "name": "Code9"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil array original\nconst children = items[0].json.children || [];\n\n// Buat satu item per gambar\nreturn children.map(child => ({\n  json: {\n    pageId: items[0].json.id,                // atau field mana pun yang berisi ID halaman\n    videoUrl: child.video.external.url        // URL gambar\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6540,
+        300
+      ],
+      "id": "60496043-ea34-4cb0-a163-8e8d35b46991",
+      "name": "Code10"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "blockId": {
+          "__rl": true,
+          "value": "={{ $items(\"Notion1\")[0].json.id }}",
+          "mode": "id"
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "textContent": "={{ $json.videoUrl }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        6780,
+        340
+      ],
+      "id": "c86e5095-14fb-4b28-b840-b375784926cb",
+      "name": "Notion4",
+      "credentials": {
+        "notionApi": {
+          "id": "4HOQ7Ynj7AmIzylv",
+          "name": "Notion account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "OpenAI2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check robots": {
+      "main": [
+        [
+          {
+            "node": "If sitemap exists",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If sitemap exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If sitemap exists": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "GET XML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML": {
+      "main": [
+        [
+          {
+            "node": "find URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI2": {
+      "main": [
+        [
+          {
+            "node": "Check robots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown1": {
+      "main": [
+        [
+          {
+            "node": "Strip1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request6": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request7": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Strip": {
+      "main": [
+        [
+          {
+            "node": "Code Parsing to Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "find URLs": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET URLs": {
+      "main": [
+        [
+          {
+            "node": "Markdown1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Strip1": {
+      "main": [
+        [
+          {
+            "node": "Code Parsing to Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET XML": {
+      "main": [
+        [
+          {
+            "node": "XML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET URLs1": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "OpenAI4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code5": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Parsing to Data": {
+      "main": [
+        [
+          {
+            "node": "Code5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Code Parsing to Data1": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Notion2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Notion1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "GET URLs1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI3": {
+      "main": [
+        [
+          {
+            "node": "Strip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "GET URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion2": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI4": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "OpenAI3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Code6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code6": {
+      "main": [
+        [
+          {
+            "node": "Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Code7",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code7": {
+      "main": [
+        [
+          {
+            "node": "Code8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code8": {
+      "main": [
+        [
+          {
+            "node": "Notion3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Code9",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code9": {
+      "main": [
+        [
+          {
+            "node": "Code10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code10": {
+      "main": [
+        [
+          {
+            "node": "Notion4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion4": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c245c0df-9b40-4cb5-866f-4bf9287f2e14",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7ff6d94ecf94ba134146ef7d28ffb863f2e40767c6adfd490ff08c52e7d17efe"
+  },
+  "id": "QQfvHSf61SRictpT",
+  "tags": []
+}

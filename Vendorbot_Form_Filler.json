@@ -1,0 +1,1488 @@
+{
+  "name": "Vendorbot Form Filler",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Merge Triggers",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [
+        -300,
+        140
+      ],
+      "id": "ed6958a7-823e-49a8-961a-768dbcb44ea7"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "source",
+              "value": "={{ \n  $json.source === 'telegram' \n    ? 'telegram' \n    : ($json.source === 'slack' \n       ? 'slack' \n       : 'email') \n}}"
+            },
+            {
+              "name": "replyToId",
+              "value": "={{ $json.message.chat.id }}"
+            },
+            {
+              "name": "originalFilename",
+              "value": "={{ $json.message.document.file_name }}"
+            },
+            {
+              "name": "uniqueTriggerId",
+              "value": "= {{ $json.message?.message_id || $json.event?.event_ts || $json.id || $runIndex }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set Interaction Details",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -100,
+        140
+      ],
+      "id": "57cfcbb8-baa7-4b21-892f-afda1a19a583"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil path lengkap yang sudah diset di node sebelumnya\nconst filePath = $input.first().json.fileName || '';   // contoh: \"/files/File.xlsx\"\n\n// Ambil nama file saja (tanpa folder)\nconst fileName = filePath.split('/').pop();            // hasil: \"File.xlsx\"\n\n// Ambil ekstensi (huruf kecil)\nconst fileExt  = fileName.split('.').pop().toLowerCase();\n\n// Validasi ekstensi\nconst allowed = ['docx', 'xlsx'];\nconst isValid = allowed.includes(fileExt);\n\nreturn [{\n  json: {\n    // pertahankan semua data asli\n    ...$input.first().json,\n\n    // tambahkan atau timpa field di bawah\n    filePath,           // \"/files/File.xlsx\"\n    fileName,           // \"File.xlsx\"\n    fileExt,            // \"xlsx\"\n    validationStatus:  isValid ? 'success' : 'error',\n    validationMessage: isValid\n      ? 'File format is valid.'\n      : 'Invalid file format. Only DOCX and XLSX files are supported.'\n  }\n}];\n"
+      },
+      "name": "Validate File Type",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        320,
+        140
+      ],
+      "id": "86420809-f3e0-470c-8f85-43cbd75bf70d"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.validationStatus }}",
+              "value2": "success"
+            }
+          ]
+        }
+      },
+      "name": "Is File Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        520,
+        140
+      ],
+      "id": "c24f80aa-8db9-4631-b306-54cb118ddc0e"
+    },
+    {
+      "parameters": {
+        "command": "=python3 /scripts/form_filler_integration.py \\\n  --input \"/files/{{ $json.fileName }}\" \\\n  --data \"/scripts/form_data.json\" \\\n  --output \"/files/\""
+      },
+      "name": "Execute Python Form Filler",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        40
+      ],
+      "id": "28758caf-fb71-423b-a280-c6993f3a1b35"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.status }}",
+              "value2": "success"
+            }
+          ]
+        }
+      },
+      "name": "Was Python Script Successful?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        -140
+      ],
+      "id": "323321c5-071a-4f18-993b-d90f089217c7"
+    },
+    {
+      "parameters": {
+        "subject": "=Filled Vendor Form: {{ $('Is File Valid?').item.json.originalFilename }}",
+        "message": "=This email contains an automatically filled vendor form.\n\nOriginal filename: {{ $('Is File Valid?').item.json.originalFilename }}\nProcessed on: {{ new Date().toISOString() }}\n\nPlease review before sending.",
+        "additionalFields": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "file1"
+              },
+              {
+                "property": "file2"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Create Gmail Draft",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 1,
+      "position": [
+        2560,
+        -460
+      ],
+      "id": "e7bfdeaa-839a-43e3-997b-7d150a18acae",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "EC4ZH5Dx6b0sAar0",
+          "name": "Gmail Fluidflow Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=Your form '{{ $('Is File Valid?').item.json.originalFilename }}' has been processed successfully and saved as a Gmail draft in sales@fluidflowinfo.com.",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "name": "Send Telegram Notification",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        3100,
+        -720
+      ],
+      "id": "8332d803-54c1-4052-b7fc-d1f649ee5027",
+      "webhookId": "f6068027-e69d-4c11-8a5f-f7c64f50e346",
+      "credentials": {
+        "telegramApi": {
+          "id": "GH9ed7EObaqoe8Ov",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "channel": "ffagent-testing",
+        "text": "=Your form '{{ $('Is File Valid?').item.json.fileName }}' has been processed successfully and saved as a Gmail draft in sales@fluidflowinfo.com.",
+        "otherOptions": {},
+        "attachments": []
+      },
+      "name": "Send Slack Notification",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        3100,
+        -500
+      ],
+      "id": "afaf30ef-4f27-418a-86d8-5937faf081ab",
+      "credentials": {
+        "slackApi": {
+          "id": "sFP4J3cnphzsYGa3",
+          "name": "Slack Credential Fluidflow Vendorbot bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "=rm /files/"
+      },
+      "name": "Cleanup Temporary Files",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        3620,
+        940
+      ],
+      "id": "a28ca4cf-60b3-4a82-b83c-b96e58688eaa",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.replyToId }}",
+        "text": "={{ $json.validationMessage }}",
+        "additionalFields": {}
+      },
+      "name": "Send Telegram Error (Invalid File)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        560
+      ],
+      "id": "ae3b0ebe-31f4-4bcb-98da-16151f4c1d54",
+      "webhookId": "866af389-1d46-40b6-9f7d-74d4262843d5",
+      "credentials": {
+        "telegramApi": {
+          "id": "GH9ed7EObaqoe8Ov",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "channel": "ffagent-testing",
+        "text": "={{ $json.validationMessage }}",
+        "otherOptions": {},
+        "attachments": []
+      },
+      "name": "Send Slack Error (Invalid File)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        1020,
+        780
+      ],
+      "id": "c66185d3-1ef3-4301-af62-46281a174510",
+      "credentials": {
+        "slackApi": {
+          "id": "3041Sm2zxPHvbmH5",
+          "name": "FluidFlow Licensing2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "{{ $json.replyToId }}",
+        "text": "=Error processing '{{ $json.originalFilename }}': Python script failed. {{ $json.result.message }}",
+        "additionalFields": {}
+      },
+      "name": "Send Telegram Error (Python Fail)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        -20
+      ],
+      "id": "7b9fac3f-1c53-4de8-9fcb-51b8bf30b0af",
+      "webhookId": "9582c767-e89c-4389-a8ba-b52d200c4f0a",
+      "credentials": {
+        "telegramApi": {
+          "id": "GH9ed7EObaqoe8Ov",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "channel": "ffagent-testing",
+        "text": "=Error processing '{{ $json.originalFilename }}': Python script failed. {{ $json.result.message }}",
+        "otherOptions": {},
+        "attachments": []
+      },
+      "name": "Send Slack Error (Python Fail)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        220
+      ],
+      "id": "d62f18d4-bb89-498f-be45-5f6c33d6fd79",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "hDV7UR5B6xGG9Xsz",
+          "name": "Slack account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "download": true,
+          "imageSize": "large"
+        }
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1920,
+        -80
+      ],
+      "id": "913c498c-c06e-4373-aad6-d6f4bc841506",
+      "name": "Telegram Trigger",
+      "webhookId": "8671440f-8fd9-4b83-9483-ff34470ebfbb",
+      "credentials": {
+        "telegramApi": {
+          "id": "GH9ed7EObaqoe8Ov",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=/files/{{ $json.fileName }}",
+        "dataPropertyName": "file",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        100,
+        140
+      ],
+      "id": "99389bf9-5e70-4057-a9f2-48ee5632aeb6",
+      "name": "Write Temporary Files from Disk (XLSX/DOCX)"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.stdout }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1240,
+        -40
+      ],
+      "id": "0623884e-a0e7-4eb0-bce4-cadc21efc303",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "source",
+              "value": "telegram"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Add Source Telegram",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -780,
+        -80
+      ],
+      "id": "86b0850c-a1ca-42fb-a205-51a403615d4f"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "source",
+              "value": "=slack"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Add Source Slack",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -780,
+        140
+      ],
+      "id": "0ba73f9d-cf7b-40c5-99ae-07bfd43d8ede"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "source",
+              "value": "email"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Add Source Email",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -780,
+        360
+      ],
+      "id": "e802b8e4-e531-4958-90d8-2e8a8cbfae8e"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.source }}",
+                    "rightValue": "telegram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "544811c6-7ec6-4a8d-96f0-b57a64fa9fc0"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "76f0b6dc-9f96-4351-b3ab-1030d5569acf",
+                    "leftValue": "={{ $json.source }}",
+                    "rightValue": "slack",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5b6444f0-d4b6-4afb-b214-f47ec381ab51",
+                    "leftValue": "={{ $json.source }}",
+                    "rightValue": "email",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        780,
+        780
+      ],
+      "id": "9b9f6e9a-7d8c-467d-bb87-6cfe99a47f02",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.source }}",
+                    "rightValue": "telegram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f9b72969-ad68-4b8b-9f81-3b4c39fe5b65"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "370d1152-375f-47e9-9128-b1c9c1ce1298",
+                    "leftValue": "={{ $json.source }}",
+                    "rightValue": "slack",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4acbe62a-d573-4db0-8f93-395aa9fd7eeb",
+                    "leftValue": "={{ $json.source }}",
+                    "rightValue": "email",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1680,
+        220
+      ],
+      "id": "49f1b048-7f34-4e75-a733-fa776364a748",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Is File Valid?').item.json.source }}",
+                    "rightValue": "telegram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d5c25ade-7171-49ee-ba5a-382184b36edb"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d535b5dd-4af4-40ad-ae13-e50ab3c1c03d",
+                    "leftValue": "={{ $('Is File Valid?').item.json.source }}",
+                    "rightValue": "slack",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8e0f72bf-b01a-4e6b-a929-2e7e1c8c3b6c",
+                    "leftValue": "={{ $('Is File Valid?').item.json.source }}",
+                    "rightValue": "email",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2820,
+        -500
+      ],
+      "id": "f4e4f316-a2b8-4b8d-a567-5b4fef7c736d",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "fileSelector": "={{ $json.output_file }}",
+        "options": {
+          "dataPropertyName": "file1"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        -460
+      ],
+      "id": "6f0e309d-2a35-4710-8c7b-4eaf1a4a9793",
+      "name": "Read Output Files"
+    },
+    {
+      "parameters": {
+        "fileSelector": "={{ $('Was Python Script Successful?').item.json.info_file }}",
+        "options": {
+          "dataPropertyName": "file2"
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        -280
+      ],
+      "id": "9787af5d-44d6-4fea-881b-0283e831bce5",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        2220,
+        -440
+      ],
+      "id": "f4c6ed27-441a-4dc8-849c-a9c147a084d6",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1920,
+        360
+      ],
+      "id": "c691c30b-4ddc-4cd7-bc2f-6407d66838ba",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "EC4ZH5Dx6b0sAar0",
+          "name": "Gmail Fluidflow Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Normalisasi output trigger apa pun menjadi:\n *   - binary.file         (berisi data lampiran)\n *   - json.fileName       \"File.xlsx\"\n *   - json.ext            \"xlsx\"\n *   - json.mimeType       \"application/vnd.openxmlformats-…\"\n *\n * JANGAN lupa: di node Function ➜ Settings ➜ centang “Keep Binary Data”.\n */\nreturn items.map(item => {\n  // --- 1. Pastikan item punya binary ---\n  if (!item.binary || Object.keys(item.binary).length === 0) {\n    throw new Error('Item tidak memiliki data biner');\n  }\n\n  // --- 2. Ambil key binary pertama ('data','file','attachment_0',dsb) ---\n  const originalKey = Object.keys(item.binary)[0];\n  const blob        = item.binary[originalKey];   // objek {data,fileName,mimeType,…}\n\n  // --- 3. Pindahkan blob ke key tunggal 'file' ---\n  item.binary = { file: blob };\n\n  // --- 4. Pastikan metadata fileName, ext, mimeType di json ---\n  const fileName = blob.fileName ||                                  // biasanya tersedia\n                   (blob.id ? `${blob.id}` : 'unknown.bin');         // fallback\n\n  const ext = fileName.includes('.') ? fileName.split('.').pop().toLowerCase() : '';\n\n  item.json = {\n    ...item.json,            // pertahankan field lama (mis. source)\n    fileName,                // \"File.xlsx\"\n    ext,                     // \"xlsx\"\n    mimeType: blob.mimeType || '',\n  };\n\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1600,
+        -80
+      ],
+      "id": "1eedc44e-3e92-4b12-a742-3c33eecd4dab",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "any_event"
+        ],
+        "channelId": {
+          "__rl": true,
+          "value": "C0905HV0AD8",
+          "mode": "list",
+          "cachedResultName": "ffagent-testing"
+        },
+        "downloadFiles": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1920,
+        140
+      ],
+      "id": "b7f78f0c-a8f5-4384-87d7-f01a7a6c414c",
+      "name": "Slack Trigger",
+      "webhookId": "54f0512c-459b-4de1-b3d0-1b9c770e2587",
+      "credentials": {
+        "slackApi": {
+          "id": "3041Sm2zxPHvbmH5",
+          "name": "FluidFlow Licensing2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.files[0].url_private_download }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackApi",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1600,
+        140
+      ],
+      "id": "993e96d7-f06e-4958-a7e9-2521a2400984",
+      "name": "HTTP Request",
+      "credentials": {
+        "slackApi": {
+          "id": "sFP4J3cnphzsYGa3",
+          "name": "Slack Credential Fluidflow Vendorbot bot"
+        },
+        "slackOAuth2Api": {
+          "id": "hDV7UR5B6xGG9Xsz",
+          "name": "Slack account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  // cek dulu kalau ada binary.attachment_0\n  if (item.binary && item.binary.attachment_0) {\n    // pindah ke binary.file\n    item.binary.file = item.binary.attachment_0;\n    // hapus binary.attachment_0\n    delete item.binary.attachment_0;\n  }\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1300,
+        360
+      ],
+      "id": "a6521332-7ff2-4741-a3a4-7a1457fc27fc",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  // Dapatkan daftar semua key di binary (misal: 'attachment_0', 'file', 'data', dsb)\n  const binKeys = item.binary ? Object.keys(item.binary) : [];\n  if (binKeys.length === 0) {\n    // Tidak ada binary: lewati\n    return item;\n  }\n\n  // Ambil blob dari key pertama\n  const blob = item.binary[binKeys[0]];\n  \n  // Simpan nama file dan ekstensi ke JSON\n  item.json.fileName = blob.fileName;                // misal \"File.xlsx\"\n  item.json.fileExt  = blob.fileName.split('.').pop();\n\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        360
+      ],
+      "id": "975d0322-f902-4474-a398-0b145dc325bd",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  // Dapatkan daftar semua key di binary (misal: 'attachment_0', 'file', 'data', dsb)\n  const binKeys = item.binary ? Object.keys(item.binary) : [];\n  if (binKeys.length === 0) {\n    // Tidak ada binary: lewati\n    return item;\n  }\n\n  // Ambil blob dari key pertama\n  const blob = item.binary[binKeys[0]];\n  \n  // Simpan nama file dan ekstensi ke JSON\n  item.json.fileName = blob.fileName;                // misal \"File.xlsx\"\n  item.json.fileExt  = blob.fileName.split('.').pop();\n\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        140
+      ],
+      "id": "81f1b0fe-5566-4ac9-b5f1-450757cc404e",
+      "name": "Code5"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Gmail Trigger').item.json.from.value[0].address }}",
+        "subject": "Form Processing Completed",
+        "message": "=Your form '{{ $('Is File Valid?').item.json.fileName }}' has been processed successfully and saved as a Gmail draft in sales@fluidflowinfo.com.",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3100,
+        -300
+      ],
+      "id": "e5518657-f7ff-4cff-a32f-a9400c6b4a87",
+      "name": "Gmail",
+      "webhookId": "344113f2-f61e-4a7a-b45d-5b4ef5dccbc8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "EC4ZH5Dx6b0sAar0",
+          "name": "Gmail Fluidflow Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Gmail Trigger').item.json.from.value[0].address }}",
+        "subject": "Form Processing Error",
+        "message": "=Error processing '{{ $json.originalFilename }}': Python script failed. {{ $json.result.message }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1920,
+        440
+      ],
+      "id": "710e2a77-01cd-4293-89c7-ccd386555c44",
+      "name": "Gmail1",
+      "webhookId": "da077423-5191-48c9-90fe-c4e2df0d7536",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "EC4ZH5Dx6b0sAar0",
+          "name": "Gmail Fluidflow Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Gmail Trigger').item.json.from.value[0].address }}",
+        "subject": "Form Processing Error",
+        "message": "=Error processing '{{ $json.originalFilename }}': {{ $json.validationMessage }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1020,
+        980
+      ],
+      "id": "43ac31dc-0269-4ef8-88d8-58f4652bb7c4",
+      "name": "Gmail2",
+      "webhookId": "f805259a-e6a7-4e52-a8f7-67adf9ee6746",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "EC4ZH5Dx6b0sAar0",
+          "name": "Gmail Fluidflow Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1b8a09a4-5b40-417d-a4c4-4e6ec072ca5f",
+              "leftValue": "={{ $json.hasBinary }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1520,
+        360
+      ],
+      "id": "6fb17dce-7de2-4b82-81a5-5cc2502b6082",
+      "name": "Check Attachment"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const hasBinary = !!item.binary && Object.keys(item.binary).length > 0;\n  \n  // Tambahkan flag di JSON\n  item.json.hasBinary = hasBinary;\n  \n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1680,
+        360
+      ],
+      "id": "eef2ac16-9a8d-40b9-beea-9bd46a55c423",
+      "name": "Code"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1300,
+        540
+      ],
+      "id": "9bd4b973-61bc-48d3-9e26-59d0b20e7811",
+      "name": "No Operation, do nothing"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge Triggers": {
+      "main": [
+        [
+          {
+            "node": "Set Interaction Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate File Type": {
+      "main": [
+        [
+          {
+            "node": "Is File Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is File Valid?": {
+      "main": [
+        [
+          {
+            "node": "Execute Python Form Filler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Python Form Filler": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Was Python Script Successful?": {
+      "main": [
+        [
+          {
+            "node": "Read Output Files",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Gmail Draft": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram Notification": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Temporary Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Slack Notification": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Temporary Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Interaction Details": {
+      "main": [
+        [
+          {
+            "node": "Write Temporary Files from Disk (XLSX/DOCX)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Temporary Files from Disk (XLSX/DOCX)": {
+      "main": [
+        [
+          {
+            "node": "Validate File Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Was Python Script Successful?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Source Telegram": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Source Slack": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Add Source Email": {
+      "main": [
+        [
+          {
+            "node": "Merge Triggers",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Error (Invalid File)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Slack Error (Invalid File)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Error (Python Fail)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Slack Error (Python Fail)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Slack Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram Error (Python Fail)": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Temporary Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Slack Error (Python Fail)": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Temporary Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram Error (Invalid File)": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Temporary Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Slack Error (Invalid File)": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Temporary Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Output Files": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Create Gmail Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cleanup Temporary Files": {
+      "main": [
+        []
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Add Source Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Add Source Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code5": {
+      "main": [
+        [
+          {
+            "node": "Add Source Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Temporary Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail1": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Temporary Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail2": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Temporary Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Attachment": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Check Attachment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8ed7b9ca-a098-4cb2-a8a6-3d5220ca9d67",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7ff6d94ecf94ba134146ef7d28ffb863f2e40767c6adfd490ff08c52e7d17efe"
+  },
+  "id": "Dq7Sx6afpJ1gcsaA",
+  "tags": []
+}

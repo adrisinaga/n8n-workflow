@@ -1,0 +1,573 @@
+{
+  "name": "Google Maps Scrapper",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        60
+      ],
+      "id": "37b135f8-f22f-4e35-b7c7-9cc0624e9f8b",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        60
+      ],
+      "id": "5d3daca3-36db-4269-8365-6d5266975aa9",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        0,
+        60
+      ],
+      "id": "2e21d2b7-f85b-4227-a0cf-9aec8fb9d240",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        360,
+        160
+      ],
+      "id": "d4e98ab8-2750-4cf6-accc-f39316fe6658",
+      "name": "Wait",
+      "webhookId": "19cc6ed4-4fe7-485b-b879-c679e4b3374d"
+    },
+    {
+      "parameters": {
+        "maxItems": 10
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        60
+      ],
+      "id": "0f262ea8-f4be-40b1-a76f-6d63bfb4b3de",
+      "name": "Limit"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        180,
+        0
+      ],
+      "id": "5e682f07-179b-494f-8557-a68d42fd3e4f",
+      "name": "Wait1",
+      "webhookId": "0fe34756-6e43-4603-8891-5747a9a6500a"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "emails",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        540,
+        0
+      ],
+      "id": "e0fa6780-8476-434f-ace2-35846ecd0260",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json.data\nconst regex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.(?!jpeg|jpg|png|gif|webp|svg)[a-zA-Z]{2,}/g\nconst emails = input.match(regex)\nreturn {json: {emails:emails}}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        540,
+        160
+      ],
+      "id": "eb047c1a-34a1-410d-adcd-dbf451f4fbaf",
+      "name": "Extract Emails",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json.data\nconst regex = /https?:\\/\\/[^\\/\\s\"'>]+/g\nconst websites = input.match(regex)\nreturn websites.map(website => ({json:{website}}))"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        60
+      ],
+      "id": "9b17e83f-047d-4cd7-b28d-d8c166876a8e",
+      "name": "Extract URLs"
+    },
+    {
+      "parameters": {
+        "url": "https://www.google.com/maps/search/masakan+padang",
+        "options": {
+          "allowUnauthorizedCerts": true,
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1000,
+        60
+      ],
+      "id": "52375456-bad0-4a8a-bdac-7f41ad76de10",
+      "name": "Scrape Google Maps"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.website }}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        180,
+        160
+      ],
+      "id": "b65a8857-76a7-47ad-adac-43da6ba66863",
+      "name": "Scrape Site",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a6786c58-424a-409a-b87f-8a7592cb7944",
+              "leftValue": "={{ $json.emails }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        360,
+        0
+      ],
+      "id": "36602948-af8c-4845-b112-d13d6a62d25c",
+      "name": "Filter Out Empties"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bf0a5053-9660-457c-9581-964793bb6d7d",
+              "leftValue": "={{ $json.website }}",
+              "rightValue": "schema",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "9110b9e0-12aa-45cc-bde0-9eda8c10970e",
+              "leftValue": "={{ $json.website }}",
+              "rightValue": "google",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "fb9b6ed6-96a5-4560-ab10-b8a4b9a61a2b",
+              "leftValue": "={{ $json.website }}",
+              "rightValue": "gg",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            },
+            {
+              "id": "10500c0b-cdbd-4816-aba3-df60d69845dc",
+              "leftValue": "={{ $json.website }}",
+              "rightValue": "gstatic",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -600,
+        60
+      ],
+      "id": "7db18e40-a005-4b50-8a53-8106a8ff849c",
+      "name": "Filter Google URLs"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        740,
+        0
+      ],
+      "id": "9fef3965-6baf-4f7f-8bec-1859f0d3bb4f",
+      "name": "Remove Duplicates (2)"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1a2ic0DUjnP6gWXqKbFhqz2-bMEnbufWDX-eT77eQ29I",
+          "mode": "list",
+          "cachedResultName": "Data Scraping",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1a2ic0DUjnP6gWXqKbFhqz2-bMEnbufWDX-eT77eQ29I/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1951139275,
+          "mode": "list",
+          "cachedResultName": "Emails",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1a2ic0DUjnP6gWXqKbFhqz2-bMEnbufWDX-eT77eQ29I/edit#gid=1951139275"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "emails": "{{ $json.emails }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "emails",
+              "displayName": "emails",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "useAppend": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        940,
+        0
+      ],
+      "id": "3905ebde-2d01-4cb4-bde7-93f47c7b794d",
+      "name": "Add to Sheet (or whatever you want!)",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7V7vdXu2XINrMdEY",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Wait1": [
+      {
+        "json": {
+          "emails": [
+            "inglewoodfamilydental@gmail.com"
+          ]
+        }
+      },
+      {
+        "json": {
+          "error": "Cannot read properties of undefined (reading 'match') [line 3]"
+        }
+      },
+      {
+        "json": {
+          "error": "Cannot read properties of undefined (reading 'match') [line 3]"
+        }
+      },
+      {
+        "json": {
+          "error": "Cannot read properties of undefined (reading 'match') [line 3]"
+        }
+      },
+      {
+        "json": {
+          "error": "Cannot read properties of undefined (reading 'match') [line 3]"
+        }
+      },
+      {
+        "json": {
+          "error": "Cannot read properties of undefined (reading 'match') [line 3]"
+        }
+      },
+      {
+        "json": {
+          "emails": null
+        }
+      },
+      {
+        "json": {
+          "emails": null
+        }
+      },
+      {
+        "json": {
+          "emails": null
+        }
+      },
+      {
+        "json": {
+          "error": "Cannot read properties of undefined (reading 'match') [line 3]"
+        }
+      }
+    ],
+    "Remove Duplicates (2)": [
+      {
+        "json": {
+          "emails": "inglewoodfamilydental@gmail.com"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Scrape Google Maps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Scrape Site",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Extract Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Filter Out Empties",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates (2)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Emails": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract URLs": {
+      "main": [
+        [
+          {
+            "node": "Filter Google URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Google Maps": {
+      "main": [
+        [
+          {
+            "node": "Extract URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Site": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Out Empties": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Google URLs": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates (2)": {
+      "main": [
+        [
+          {
+            "node": "Add to Sheet (or whatever you want!)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "df02ffab-db73-432d-a842-1cada17927fc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1d11f58a61b956846e8e68a9d43c975cf55e1b2f9a5473e74ae7673cf8849e6d"
+  },
+  "id": "tPQlFkhu9HCcQcCU",
+  "tags": [
+    {
+      "createdAt": "2025-06-02T17:58:21.855Z",
+      "updatedAt": "2025-06-02T17:58:21.855Z",
+      "id": "X5rQUo56hWMDIvB8",
+      "name": "N8N Course"
+    }
+  ]
+}

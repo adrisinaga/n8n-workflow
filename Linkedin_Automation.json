@@ -1,0 +1,1418 @@
+{
+  "name": "Linkedin Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "toolDescription": "Use this tool to search the web. ",
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"query\": \"{searchTerm}\",\n  \"topic\": \"general\",\n  \"search_depth\": \"advanced\",\n  \"chunks_per_source\": 3,\n  \"max_results\": 1,\n  \"time_range\": null,\n  \"days\": 7,\n  \"include_answer\": true,\n  \"include_raw_content\": false,\n  \"include_images\": false,\n  \"include_image_descriptions\": false,\n  \"include_domains\": [],\n  \"exclude_domains\": []\n}",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "searchTerm",
+              "description": "What the user is searching for. "
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        420,
+        340
+      ],
+      "id": "480b1af9-7fbc-4e64-9aa9-34513582bb03",
+      "name": "Tavily"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        620,
+        320
+      ],
+      "id": "1b2a10c6-8f66-4b67-a29d-6516f9e28f78",
+      "name": "GPT_4.1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Topic of Post: {{ $json.Topic }}\n\nTarget Audience: {{ $json['Target Audience'] }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an AI agent specialized in creating professional, educational, and engaging LinkedIn posts based on any topic provided by the user.\n\nToday's date is {{ $now }}.\n\n## Objectives:\nAlways begin by conducting a real-time search using the Tavily tool to gather the most accurate, up-to-date information on the topic. The post should be written to appeal to the provided target audience.\n\nBased on your research, generate a well-structured LinkedIn post that:\n- Starts with an engaging hook\n- Professional in tone\n- Clear and easy to read\n- Educational and insightful\n- Light on emojis (use only when highly relevant and minimal)\n- Includes proper source attribution (e.g., “according to [source]”)\n- Contains relevant hashtags to improve visibility\n- Ends with a clear call to action (e.g., asking for thoughts, feedback, or shares)\n\n## Output Instructions:\n- Your ONLY output should be the final LinkedIn post text.\n- Do not include explanations, notes, or anything beyond the post itself.\n- Remove all AI artifacts from text. example \"—\"\n\n## Example Workflow:\n1) Receive a topic (e.g., “The ROI of warehouse automation”)\n2) Use Tavily to search and gather recent information or case studies\n3) Draft a LinkedIn post using that research\n4) Format it with source citations, clean structure, optional hashtags, and a call to action"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        200,
+        -20
+      ],
+      "id": "a335f112-b59e-4163-8c83-8b134536bd30",
+      "name": "LinkedIn Post Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=LinkedIn Post: \n{{ $json.l }}",
+        "options": {
+          "systemMessage": "=Overview\nYou are an AI agent specializing in creating visual prompts for LinkedIn marketing posts. Your role is to transform a LinkedIn post’s core message into a detailed image prompt that produces a polished, professional graphic suitable for LinkedIn’s display dimensions.\n\nObjective:\n- Read and analyze the provided LinkedIn post.\n- Identify the main message, insight, or emotional hook of the post.\n- Generate a concise, vivid image prompt designed for AI image generation tools.\n\nThe resulting graphic must:\n- Visually support the post’s core idea (without literal storytelling unless explicitly called for).\n- Be sized and composed for LinkedIn’s recommended aspect ratio (1.91:1).\n- Look professional, modern, and engaging — appropriate for LinkedIn audiences.\n\nImage Composition Guidelines:\n- Aspect Ratio: Always describe visuals for 1.91:1 (landscape) aspect ratio, e.g., 1200x627px.\n- Safe Zones: Keep important elements centered horizontally and vertically. Leave visual breathing room (padding) near edges to prevent mobile cropping.\n- Design Style:\n  - Use clean, brand-friendly visuals.\n  - Favor modern flat design, minimalism, gradients, bold shapes, charts, subtle illustrations, light motion/energy effects.\n  - Avoid hyperrealistic photos unless specified otherwise.\n  - Think like a graphic designer, not like a photographer.\n- Typography Guidance:\n  - Mention space for bold titles or short callout text — but never placeholder words like \"Header Text.\"\n  - Suggest text placement zones, e.g., “top-center,” “bottom-right overlay,” etc.\n- Iconography & Visual Elements:\n  - You may describe metaphors (e.g., lightbulb for ideas, mountain peaks for success) if relevant.\n  - You may specify simple graphic elements like line charts, pie graphs, arrow diagrams, checklists, depending on post content.\n- Color Scheme:\n  - Unless specified, suggest neutral-modern or brand-aligned palettes (blues, whites, soft gradients, minimalistic darks).\n- Text content:\n  - Make sure to add any text that needs to be included in the image to the prompt.\n\nOutput Rules:\n- Output only the final image prompt.\n- Do not output quotation marks, explanation, or repeat the LinkedIn post.\n- Never leave placeholder text areas like \"Your text here.\"\n- Always guide the image generator to create a visually complete and appealing graphic without needing manual fixes.\n\nExample Final Prompt Output:\nModern flat illustration, 1.91:1 aspect ratio, safe-centered layout. A lightbulb made of small interconnected gears floats above an outstretched hand, symbolizing innovative ideas. Soft gradient blue-to-white background. Subtle glowing effect around the bulb. Space reserved for bold title text at the top-center. Clean, professional, LinkedIn-friendly style with minimal clutter.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        780,
+        -20
+      ],
+      "id": "2b821ee2-8f17-4d95-a6a3-e3cdc7ac2c8a",
+      "name": "Image Prompt Agent"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/generations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-image-1"
+            },
+            {
+              "name": "prompt",
+              "value": "={{ $json.output }}"
+            },
+            {
+              "name": "size",
+              "value": "1024x1024"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1180,
+        -20
+      ],
+      "id": "5252be9e-065b-4b16-b250-f2ec048e9186",
+      "name": "Generate Image"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data[0].b64_json",
+        "binaryPropertyName": "=data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1380,
+        -20
+      ],
+      "id": "0159ef2e-377c-4aa0-83e2-2903207e87f2",
+      "name": "Convert to Binary"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1120,
+        0
+      ],
+      "id": "0800e874-8add-4269-a91a-6d441eedc2de",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.messages[0].text.body }}",
+                    "rightValue": "start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "63d39e6f-d720-412c-8e87-ef6cda4fa373"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "start"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e1ff7616-1e22-40fe-ae08-12cdf6e22217",
+                    "leftValue": "={{ $json.messages[0].text.body }}",
+                    "rightValue": "post",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "post"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "24335dae-9808-45e4-b64d-88372b2b134b",
+                    "leftValue": "={{ $json.messages[0].text.body }}",
+                    "rightValue": "reject",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "reject"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "16691730-b7e8-4047-9414-24753aac8a91",
+                    "leftValue": "={{ $json.messages[0].text.body }}",
+                    "rightValue": "?",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "help"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -960,
+        560
+      ],
+      "id": "055d37aa-6342-43ca-8a57-eae813a9906e",
+      "name": "Switch",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=512999201904379",
+        "recipientPhoneNumber": "27813457008",
+        "textBody": "=Instructions:\n- Send \"start\" to kick off a new post\n- To approve a post and have it submitted to linkedin send \"post [the id of the pose]\"\n- To reject a post and have it removed from the process send \"reject [the id of the pose]\"",
+        "additionalFields": {}
+      },
+      "id": "068e7c65-bd01-49da-8dfb-ae48284eb2c0",
+      "name": "SendWhatsapp1",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        960
+      ],
+      "executeOnce": true,
+      "webhookId": "94b6157a-0c3c-4780-a7fd-35aef3b4f5db"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=512999201904379",
+        "recipientPhoneNumber": "27813457008",
+        "textBody": "I received your instruction and working on it, I will send you the proof in a few minutes",
+        "additionalFields": {}
+      },
+      "id": "eb48d932-c5e9-4dbf-afb8-303517a9c938",
+      "name": "SendWhatsapp",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        420
+      ],
+      "executeOnce": true,
+      "webhookId": "8037b4b7-638e-45e3-af47-42c527576ba1"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=512999201904379",
+        "recipientPhoneNumber": "27813457008",
+        "textBody": "The posting process has started, let you know when its done.",
+        "additionalFields": {}
+      },
+      "id": "01fc4845-ee9a-48ab-b835-e15e1d588493",
+      "name": "SendWhatsapp3",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        600
+      ],
+      "executeOnce": true,
+      "webhookId": "b3ee6b93-b3e7-4149-b617-68cba14b017d"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=512999201904379",
+        "recipientPhoneNumber": "27813457008",
+        "messageType": "image",
+        "mediaLink": "={{ $('UploadImage').item.json.webContentLink }}",
+        "additionalFields": {
+          "mediaCaption": "={{ $('CleanText').item.json.l }}\n\n--------------------\nHere is the post id: {{ $json.id }}\n--------------------"
+        }
+      },
+      "id": "6a7ef982-4e93-4309-ae41-0ad8a78593f8",
+      "name": "SendWhatsappWithProof",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        220
+      ],
+      "executeOnce": true,
+      "webhookId": "2c857538-991b-4caf-9c0b-a6d8c603a4f8"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{$('WhatsAppStart').item.json.contacts[0].wa_id}}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        220,
+        340
+      ],
+      "id": "d18d1722-bb46-4174-9135-ce7a0eb78932",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "id": "01ef0585-f548-43a1-9966-9f4e3243078c",
+      "name": "WhatsAppStart",
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "position": [
+        -1140,
+        600
+      ],
+      "webhookId": "b06b387a-481e-43f1-9035-01a87123ad88",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "apprBujIkGtFIqpfS",
+          "mode": "list",
+          "cachedResultName": "LinkedInPost",
+          "cachedResultUrl": "https://airtable.com/apprBujIkGtFIqpfS"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblGgAvOncQdKV1Hu",
+          "mode": "list",
+          "cachedResultName": "Posts",
+          "cachedResultUrl": "https://airtable.com/apprBujIkGtFIqpfS/tblGgAvOncQdKV1Hu"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Image": "={{ [{ \"url\": $('UploadImage').item.json.webContentLink }] }}",
+            "id": "={{ $('AirtableIN').item.json.id }}",
+            "Body": "={{ $('CleanText').item.json.l }}",
+            "PostId": "={{$('WhatsAppStart').item.json.contacts[0].wa_id}}",
+            "Status": "In progress"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Audience",
+              "displayName": "Audience",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Body",
+              "displayName": "Body",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Image",
+              "displayName": "Image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "PostId",
+              "displayName": "PostId",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Todo",
+                  "value": "Todo"
+                },
+                {
+                  "name": "In progress",
+                  "value": "In progress"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Rejected",
+                  "value": "Rejected"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1120,
+        220
+      ],
+      "id": "c027a872-7f70-4a8d-9ddb-93fb6f6479d4",
+      "name": "Airtable2"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "apprBujIkGtFIqpfS",
+          "mode": "list",
+          "cachedResultName": "LinkedInPost",
+          "cachedResultUrl": "https://airtable.com/apprBujIkGtFIqpfS"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblGgAvOncQdKV1Hu",
+          "mode": "list",
+          "cachedResultName": "Posts",
+          "cachedResultUrl": "https://airtable.com/apprBujIkGtFIqpfS/tblGgAvOncQdKV1Hu"
+        },
+        "filterByFormula": "{Status}='Todo'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -480,
+        420
+      ],
+      "id": "42b32156-5bf0-4bb9-887f-0d6b576b0990",
+      "name": "AirtableIN",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "apprBujIkGtFIqpfS",
+          "mode": "list",
+          "cachedResultName": "LinkedInPost",
+          "cachedResultUrl": "https://airtable.com/apprBujIkGtFIqpfS"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblGgAvOncQdKV1Hu",
+          "mode": "list",
+          "cachedResultName": "Posts",
+          "cachedResultUrl": "https://airtable.com/apprBujIkGtFIqpfS/tblGgAvOncQdKV1Hu"
+        },
+        "id": "={{ $json.l }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -260,
+        600
+      ],
+      "id": "5d8f6883-f9f2-42ad-8e87-bee1506a7e96",
+      "name": "AirtableIN1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('AirtableIN1').item.json.Image[0].url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -20,
+        600
+      ],
+      "id": "1671d8f0-ddd8-4fc4-97da-c685c3f86096",
+      "name": "Fetch Image"
+    },
+    {
+      "parameters": {
+        "person": "tCkd0Q5LHD",
+        "text": "={{ $('AirtableIN1').item.json.Body }}",
+        "shareMediaCategory": "IMAGE",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [
+        160,
+        600
+      ],
+      "id": "95b24638-16a7-4ef9-aca8-9bf8536dd9ee",
+      "name": "LinkedIn"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "apprBujIkGtFIqpfS",
+          "mode": "list",
+          "cachedResultName": "LinkedInPost",
+          "cachedResultUrl": "https://airtable.com/apprBujIkGtFIqpfS"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblGgAvOncQdKV1Hu",
+          "mode": "list",
+          "cachedResultName": "Posts",
+          "cachedResultUrl": "https://airtable.com/apprBujIkGtFIqpfS/tblGgAvOncQdKV1Hu"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('AirtableIN1').item.json.id }}",
+            "Status": "Done"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Audience",
+              "displayName": "Audience",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Body",
+              "displayName": "Body",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Image",
+              "displayName": "Image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "PostId",
+              "displayName": "PostId",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Todo",
+                  "value": "Todo"
+                },
+                {
+                  "name": "In progress",
+                  "value": "In progress"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Rejected",
+                  "value": "Rejected"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        340,
+        600
+      ],
+      "id": "06e69c7f-5c98-48dd-939d-f1991796b8ae",
+      "name": "Airtable"
+    },
+    {
+      "parameters": {
+        "jsCode": "var outputData =$('WhatsAppStart').first().json.messages[0].text.body.split(' ')[1]\n\nreturn [{ l: outputData }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        600
+      ],
+      "id": "e647733d-5ca1-4f7e-bb1a-9be002ad02e3",
+      "name": "Clean Input"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=512999201904379",
+        "recipientPhoneNumber": "27813457008",
+        "textBody": "Your post is now live on linkedin",
+        "additionalFields": {}
+      },
+      "id": "0d059ac7-be99-49ba-ad06-f93ab875e9aa",
+      "name": "ReplyAfterPosting",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        520,
+        600
+      ],
+      "executeOnce": true,
+      "webhookId": "b3ee6b93-b3e7-4149-b617-68cba14b017d"
+    },
+    {
+      "parameters": {
+        "jsCode": "var outputData =$('WhatsAppStart').first().json.messages[0].text.body.split(' ')[1]\n\nreturn [{ l: outputData }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -700,
+        780
+      ],
+      "id": "0822b051-c49a-42d6-812e-b46943e6ad88",
+      "name": "Clean Input1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "apprBujIkGtFIqpfS",
+          "mode": "list",
+          "cachedResultName": "LinkedInPost",
+          "cachedResultUrl": "https://airtable.com/apprBujIkGtFIqpfS"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblGgAvOncQdKV1Hu",
+          "mode": "list",
+          "cachedResultName": "Posts",
+          "cachedResultUrl": "https://airtable.com/apprBujIkGtFIqpfS/tblGgAvOncQdKV1Hu"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.l }}",
+            "Status": "Rejected"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Audience",
+              "displayName": "Audience",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Body",
+              "displayName": "Body",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Image",
+              "displayName": "Image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "PostId",
+              "displayName": "PostId",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Todo",
+                  "value": "Todo"
+                },
+                {
+                  "name": "In progress",
+                  "value": "In progress"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Rejected",
+                  "value": "Rejected"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -480,
+        780
+      ],
+      "id": "82eb1157-a3f0-4455-87b2-efff84a245b5",
+      "name": "RegectPost"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "=512999201904379",
+        "recipientPhoneNumber": "27813457008",
+        "textBody": "=Airtable empty:\n---------------\nNo more posts in airtable to use, please add some more and try again.",
+        "additionalFields": {}
+      },
+      "id": "8a068ffd-e402-40d1-9be1-f2306ef967bc",
+      "name": "SendWhatsapp2",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        440
+      ],
+      "executeOnce": true,
+      "webhookId": "94b6157a-0c3c-4780-a7fd-35aef3b4f5db"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fe151440-73cd-4942-b944-5e4c5baf5ed5",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -260,
+        420
+      ],
+      "id": "8a4ae10c-888d-4cf2-828c-8dbd35393272",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('UploadImage').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1440,
+        220
+      ],
+      "id": "51fad6f2-5247-4387-aaaf-4bbd4be829c8",
+      "name": "Cleanup"
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Convert to Binary').item.json.created }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "19fMn3Joqk4dIKu-SaI5kEFeXPXLtYB-w",
+          "mode": "list",
+          "cachedResultName": "PublicImages",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/19fMn3Joqk4dIKu-SaI5kEFeXPXLtYB-w"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        780,
+        220
+      ],
+      "id": "9ee729e2-4a13-48d4-941c-4275f131c68f",
+      "name": "UploadImage"
+    },
+    {
+      "parameters": {
+        "operation": "share",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "permissionsUi": {
+          "permissionsValues": {
+            "role": "reader",
+            "type": "anyone"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        960,
+        220
+      ],
+      "id": "b4b5de77-d844-4f73-a0e4-cd1b754694ab",
+      "name": "ShareImage"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n\nvar outputData = $input.first().json.output.replaceAll(\"—\",\", \")\n\nreturn [{ l: outputData }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        -20
+      ],
+      "id": "09686bd9-3a5e-4863-b09f-18429405ee13",
+      "name": "CleanText"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "LinkedIn Post Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT_4.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LinkedIn Post Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Image Prompt Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn Post Agent": {
+      "main": [
+        [
+          {
+            "node": "CleanText",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Prompt Agent": {
+      "main": [
+        [
+          {
+            "node": "Generate Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image": {
+      "main": [
+        [
+          {
+            "node": "Convert to Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to Binary": {
+      "main": [
+        [
+          {
+            "node": "UploadImage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "AirtableIN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "SendWhatsapp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SendWhatsapp3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Clean Input1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SendWhatsapp1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SendWhatsapp1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SendWhatsapp": {
+      "main": [
+        [
+          {
+            "node": "AirtableIN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "LinkedIn Post Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsAppStart": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AirtableIN": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable2": {
+      "main": [
+        [
+          {
+            "node": "SendWhatsappWithProof",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SendWhatsapp3": {
+      "main": [
+        [
+          {
+            "node": "Clean Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AirtableIN1": {
+      "main": [
+        [
+          {
+            "node": "Fetch Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Image": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Input": {
+      "main": [
+        [
+          {
+            "node": "AirtableIN1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable": {
+      "main": [
+        [
+          {
+            "node": "ReplyAfterPosting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Input1": {
+      "main": [
+        [
+          {
+            "node": "RegectPost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn Post Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SendWhatsapp2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SendWhatsappWithProof": {
+      "main": [
+        [
+          {
+            "node": "Cleanup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UploadImage": {
+      "main": [
+        [
+          {
+            "node": "ShareImage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ShareImage": {
+      "main": [
+        [
+          {
+            "node": "Airtable2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CleanText": {
+      "main": [
+        [
+          {
+            "node": "Image Prompt Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d5049c88-6eec-412c-8462-cd5970398049",
+  "meta": {
+    "instanceId": "1d11f58a61b956846e8e68a9d43c975cf55e1b2f9a5473e74ae7673cf8849e6d"
+  },
+  "id": "uHbpCu6pSseb6vGU",
+  "tags": []
+}

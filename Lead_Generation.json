@@ -1,0 +1,374 @@
+{
+  "name": "Lead Generation",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ed2a4e02-0e56-4f1f-b953-20b898768189",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "2da0aefd-a54e-49f1-8502-7f29243b6ca7",
+              "name": "address",
+              "value": "={{ $json.address }}",
+              "type": "string"
+            },
+            {
+              "id": "2d422939-9791-4ff4-9606-d874b8ca3beb",
+              "name": "website",
+              "value": "={{ $json.website }}",
+              "type": "string"
+            },
+            {
+              "id": "bdc82a55-acac-455b-ba5a-9435deab416e",
+              "name": "phoneUnformatted",
+              "value": "={{ $json.phoneUnformatted }}",
+              "type": "string"
+            },
+            {
+              "id": "67ab68bb-284e-4387-b43d-861893a368f3",
+              "name": "totalScore",
+              "value": "={{ $json.totalScore }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        380,
+        -120
+      ],
+      "id": "f0a31618-aec1-4005-bdd4-153d41df9f69",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "chatId": "245253871",
+        "text": "=Title: {{ $json.title }}\nAddress: {{ $json.address }}\nWebsite: {{ $json.website }}\nPhone Number: {{ $json.phoneUnformatted }}\nTotal Score: {{ $json.totalScore }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        520,
+        -120
+      ],
+      "id": "baabc878-2819-44e3-b65d-6112c589b8f9",
+      "name": "Telegram",
+      "webhookId": "cbb33385-9d40-41d8-a0b1-ba23c55ee719",
+      "credentials": {
+        "telegramApi": {
+          "id": "LyTykUpjl871o3H4",
+          "name": "Bot Scraper"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        140,
+        -340
+      ],
+      "id": "76432a56-7bd9-436e-a6a8-9772f719cd79",
+      "name": "Telegram Trigger",
+      "webhookId": "a67ffb9f-1f3f-4fe5-932d-e8c141700b86",
+      "credentials": {
+        "telegramApi": {
+          "id": "LyTykUpjl871o3H4",
+          "name": "Bot Scraper"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.apify.com/v2/datasets/{{ $json.data.defaultDatasetId }}/items?token=apify_api_KriP3lqye3efQGjaSjKLEtiOTbWr4Q3Tecum",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        -120
+      ],
+      "id": "2e4d6e04-a2a8-4173-bee2-04ca7adf2ce8",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an expert scraper consultant with 140 IQ intelegent. Get places that user want to search for example: gym location, restaurant, library, etc. Also get the locations (city, country/state) for example: Melbourne, Australia\n\n{{ $json.message.text }}",
+              "role": "system"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        260,
+        -340
+      ],
+      "id": "594c27e5-3b91-489f-9841-68d5a3dbe6c3",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "bKcf2quJwWi9RKaP",
+          "name": "OpenAi Adri"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/compass~crawler-google-places/runs?token=apify_api_KriP3lqye3efQGjaSjKLEtiOTbWr4Q3Tecum",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"includeWebResults\": false,\n    \"language\": \"en\",\n    \"locationQuery\": \"{{ $json.message.content.location.city, $json.message.content.location.country_or_state || $json.message.content.location }}, \",\n    \"maxCrawledPlacesPerSearch\": 10,\n    \"maxImages\": 0,\n    \"maximumLeadsEnrichmentRecords\": 0,\n    \"scrapeContacts\": false,\n    \"scrapeDirectories\": false,\n    \"scrapeImageAuthors\": false,\n    \"scrapePlaceDetailPage\": false,\n    \"scrapeReviewsPersonalData\": true,\n    \"scrapeTableReservationProvider\": false,\n    \"searchStringsArray\": [\n        \"{{ $json.message.content.place_type }}\"\n    ],\n    \"skipClosedPlaces\": false\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        -340
+      ],
+      "id": "959d3cba-e2e7-41ab-9107-5a25885d106a",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Hju2NV6wSXzPll__Ycsq2Mz8Fcexg0IdKq3OS0WAQyQ",
+          "mode": "list",
+          "cachedResultName": "Scraper Data ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Hju2NV6wSXzPll__Ycsq2Mz8Fcexg0IdKq3OS0WAQyQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Hju2NV6wSXzPll__Ycsq2Mz8Fcexg0IdKq3OS0WAQyQ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ $('Edit Fields').item.json.title }}",
+            "Address": "={{ $('Edit Fields').item.json.address }}",
+            "Website": "={{ $('Edit Fields').item.json.website }}",
+            "Phone Number": "={{ $('Edit Fields').item.json.phoneUnformatted }}",
+            "Total Score": "={{ $('Edit Fields').item.json.totalScore }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Website",
+              "displayName": "Website",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Score",
+              "displayName": "Total Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        660,
+        -120
+      ],
+      "id": "95e345d5-ae8d-469b-a710-9efe33d5018a",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "7V7vdXu2XINrMdEY",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        80,
+        -120
+      ],
+      "id": "fce9c777-dbcd-4d39-8557-561927e16ced",
+      "name": "Wait",
+      "webhookId": "bcff6d3e-8393-4535-96d6-b472e3302cbf"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7c522e0a-f499-4f88-a751-39e705eda156",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1d11f58a61b956846e8e68a9d43c975cf55e1b2f9a5473e74ae7673cf8849e6d"
+  },
+  "id": "ea2CmqAoGAWhDWLO",
+  "tags": []
+}

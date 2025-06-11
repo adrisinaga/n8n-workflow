@@ -1,0 +1,763 @@
+{
+  "name": "MCP Email",
+  "nodes": [
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Add one or more labels to an email message. AI-configurable parameters: Message_ID (string) - the ID of the message to label; Label_Names_or_IDs (string) - comma-separated label names or IDs to apply.",
+        "operation": "addLabels",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "labelIds": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Label_Names_or_IDs', ``, 'string') }}"
+      },
+      "id": "5eb8e504-b824-481b-8dfb-0fd265529e57",
+      "name": "addLabels",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        840,
+        740
+      ],
+      "webhookId": "81d61988-8213-4175-b75d-76cb67ce4a3b",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Delete an email message. AI-configurable parameters: Message_ID (string) - the ID of the message to delete.",
+        "operation": "delete",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}"
+      },
+      "id": "0f7282de-5038-498b-9cb4-9866022c949d",
+      "name": "delete",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        560,
+        540
+      ],
+      "webhookId": "03319c28-ef88-40f4-897c-f44c21dbdf1f",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Retrieve details of an email message. AI-configurable parameters: Message_ID (string) - the ID of the message to retrieve.",
+        "operation": "get",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}"
+      },
+      "id": "3213d167-e508-49c7-bcb1-d1be975bb250",
+      "name": "get",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        680,
+        540
+      ],
+      "webhookId": "cf5acbf3-a08f-4da6-9f14-9751eed6e5b8",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Retrieve multiple email messages based on filters. AI-configurable parameters: Return_All (boolean) - whether to return all matching messages; Search (string) - Gmail query string to filter messages; Received_After (string) - datetime (RFC3339) after which messages are received; Received_Before (string) - datetime before which messages are received; Sender (string) - email address of the sender.",
+        "operation": "getAll",
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "filters": {
+          "q": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search', ``, 'string') }}",
+          "receivedAfter": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Received_After', ``, 'string') }}",
+          "receivedBefore": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Received_Before', ``, 'string') }}",
+          "sender": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sender', ``, 'string') }}"
+        }
+      },
+      "id": "c32a7a4c-a931-4d45-bc2d-068e6b5c7450",
+      "name": "search",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        800,
+        540
+      ],
+      "webhookId": "cb3d028a-6cab-4946-b368-aa56bf271af9",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Mark an email message as read. AI-configurable parameters: Message_ID (string) - the ID of the message to mark as read.",
+        "operation": "markAsRead",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}"
+      },
+      "id": "5040c379-3c6e-4ab0-b204-58e98406e858",
+      "name": "markAsRead",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        400,
+        740
+      ],
+      "webhookId": "e769b7cf-9622-434d-b98d-4bde7653238d",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Mark an email message as unread. AI-configurable parameters: Message_ID (string) - the ID of the message to mark as unread.",
+        "operation": "markAsUnread",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}"
+      },
+      "id": "404f9fdd-71ac-43a8-8315-8123959336d8",
+      "name": "markAsUnread",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        560,
+        740
+      ],
+      "webhookId": "c26a8635-4329-498e-b293-4350baed493d",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Reply to an email message. AI-configurable parameters: Message_ID (string) - the ID of the message; Message (string) - the reply content; Attachment_Field_Name (string) - input field name containing attachments; BCC (string) - comma-separated BCC recipients; CC (string) - comma-separated CC recipients.",
+        "operation": "reply",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Attachment_Field_Name', ``, 'string') }}"
+              }
+            ]
+          },
+          "bccList": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('BCC', ``, 'string') }}",
+          "ccList": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('CC', ``, 'string') }}"
+        }
+      },
+      "id": "3ce85143-835f-4e65-b029-9b1c32aaaeef",
+      "name": "reply",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        420,
+        540
+      ],
+      "webhookId": "fbd30b84-25ac-4bab-8a66-5366b9b7a0be",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Remove one or more labels from an email message. AI-configurable parameters: Message_ID (string) - the ID of the message; Label_Names_or_IDs (string) - comma-separated label names or IDs to remove.",
+        "operation": "removeLabels",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "labelIds": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Label_Names_or_IDs', ``, 'string') }}"
+      },
+      "id": "8732671a-7b62-452c-a995-0492e2bbc39b",
+      "name": "removeLabels",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        700,
+        740
+      ],
+      "webhookId": "e83fb7ee-2716-444b-9a4e-208eea215728",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "content": "## Message Tools\n",
+        "height": 460,
+        "width": 660
+      },
+      "id": "1818fdee-5d2f-4c22-ab65-45cd76a679fb",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        320,
+        460
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Retrieve a list of labels. AI-configurable parameters: Return_All (boolean) - whether to return all labels.",
+        "resource": "label",
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}"
+      },
+      "id": "d5b887b6-dfcf-429e-a3b1-288f0bd010d3",
+      "name": "getLabels",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        1120,
+        560
+      ],
+      "webhookId": "1f107973-fe4a-440c-aaef-f35e1e8a555a",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Retrieve details of a specific label. AI-configurable parameters: Label_ID (string) - the ID of the label to retrieve.",
+        "resource": "label",
+        "operation": "get",
+        "labelId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Label_ID', ``, 'string') }}"
+      },
+      "id": "fe366cb8-1a74-4ae1-a7c4-942dcfc368c9",
+      "name": "getLabel",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        1260,
+        560
+      ],
+      "webhookId": "e9d3b2c0-50ea-4b3b-8509-f89dc4f20fb5",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Delete a label. AI-configurable parameters: Label_ID (string) - the ID of the label to delete.",
+        "resource": "label",
+        "operation": "delete",
+        "labelId": "={{ $fromAI('Label_ID', ``, 'string') }}"
+      },
+      "id": "549dafb9-7270-4839-8a5c-266d4a6f32ed",
+      "name": "deleteLabel",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        1120,
+        760
+      ],
+      "webhookId": "80a61a7c-f7a0-4fc9-a0a8-edd5846b4e11",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Create a new label. AI-configurable parameters: Label_ID (string) - the name of the label to create.",
+        "resource": "label",
+        "operation": "create",
+        "name": "={{ $fromAI('Label_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "id": "e464f185-e4ac-4944-8c40-6887a9feaafc",
+      "name": "createLabel",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        1280,
+        760
+      ],
+      "webhookId": "d24d1672-4f76-4f58-912b-9345d23ba922",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "content": "## Label Tools\n\n",
+        "height": 440,
+        "width": 380,
+        "color": 4
+      },
+      "id": "192e4306-d3a7-47be-a5e1-8e2f5f32e2a5",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1040,
+        460
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Delete an email draft. AI-configurable parameters: Draft_ID (string) - the ID of the draft to delete.",
+        "resource": "draft",
+        "operation": "delete",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Draft_ID', ``, 'string') }}"
+      },
+      "id": "bbd22e74-954c-45e9-998e-4cf7fb0e7533",
+      "name": "deleteDraft",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        1580,
+        220
+      ],
+      "webhookId": "8eb35ae4-6517-421b-b54f-ba0610cf58f4",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Create an email draft. AI-configurable parameters: Subject (string) - the subject of the draft; Message (string) - the body of the draft; Attachment_Field_Name__in_Input_ (string) - input field name containing attachments; BCC (string) - comma-separated BCC recipients; CC (string) - comma-separated CC recipients.",
+        "resource": "draft",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Attachment_Field_Name__in_Input_', ``, 'string') }}"
+              }
+            ]
+          },
+          "bccList": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('BCC', ``, 'string') }}",
+          "ccList": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('CC', ``, 'string') }}"
+        }
+      },
+      "id": "79cecd71-cc1a-4eca-8cbd-a610cdd2570b",
+      "name": "createDraft",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        1580,
+        40
+      ],
+      "webhookId": "1cca6c42-ccd9-4144-a2b1-6266d848f6ab",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Retrieve an email draft. AI-configurable parameters: Draft_ID (string) - the ID of the draft to retrieve.",
+        "resource": "draft",
+        "operation": "get",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Draft_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "id": "f8224f25-6ac0-4c36-b114-c48e538395df",
+      "name": "getDraft",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        1760,
+        40
+      ],
+      "webhookId": "80eadc8e-9d6b-42e7-9ac4-5b26d21fb3c5",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Retrieve multiple email drafts. AI-configurable parameters: Return_All (boolean) - whether to return all drafts; Include_Spam_and_Trash (boolean) - whether to include drafts in spam or trash.",
+        "resource": "draft",
+        "operation": "getAll",
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "options": {
+          "includeSpamTrash": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Include_Spam_and_Trash', ``, 'boolean') }}"
+        }
+      },
+      "id": "af617030-28e3-46db-b952-223ee4197334",
+      "name": "getManyDrafts",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        1760,
+        220
+      ],
+      "webhookId": "6aaf2777-d1c1-490b-a82f-eaab6caefe85",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "content": "## Draft Tools\n\n\n",
+        "height": 440,
+        "width": 380,
+        "color": 5
+      },
+      "id": "f80eb076-d992-4be3-abba-4b566b5ddce0",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1500,
+        -60
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Retrieve multiple email threads based on filters. AI-configurable parameters: Return_All (boolean) - whether to return all threads; Search (string) - Gmail query string to filter threads; Received_After (string) - datetime after which threads are received; Received_Before (string) - datetime before which threads are received.",
+        "resource": "thread",
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "filters": {
+          "q": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search', ``, 'string') }}",
+          "receivedAfter": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Received_After', ``, 'string') }}",
+          "receivedBefore": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Received_Before', ``, 'string') }}"
+        }
+      },
+      "id": "f99bfbc2-85aa-4d9a-958b-ac41c040a782",
+      "name": "getManyThreads",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        1540,
+        560
+      ],
+      "webhookId": "233fb55f-2575-4cbd-a327-e27858e98cd9",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Retrieve details of an email thread. AI-configurable parameters: Thread_ID (string) - the ID of the thread to retrieve.",
+        "resource": "thread",
+        "operation": "get",
+        "threadId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Thread_ID', ``, 'string') }}",
+        "options": {
+          "returnOnlyMessages": true
+        }
+      },
+      "id": "7820c8ca-a732-4f45-9270-ff6f986d5fb0",
+      "name": "getThread",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        1700,
+        560
+      ],
+      "webhookId": "9ecfaf0c-8d43-4b46-86bb-de5117b657c1",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Add one or more labels to an email thread. AI-configurable parameters: Thread_ID (string) - the ID of the thread; Label_Names_or_IDs (string) - comma-separated label names or IDs to apply.",
+        "resource": "thread",
+        "operation": "addLabels",
+        "threadId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Thread_ID', ``, 'string') }}",
+        "labelIds": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Label_Names_or_IDs', ``, 'string') }}"
+      },
+      "id": "fd0999d0-9e04-41d4-8f79-972b90aba5aa",
+      "name": "addLabelThread",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        1860,
+        560
+      ],
+      "webhookId": "c7a99e26-cb22-4675-b5a8-fb7acd302983",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Remove one or more labels from an email thread. AI-configurable parameters: Thread_ID (string) - the ID of the thread; Label_Names_or_IDs (string) - comma-separated label names or IDs to remove.",
+        "resource": "thread",
+        "operation": "removeLabels",
+        "threadId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Thread_ID', ``, 'string') }}",
+        "labelIds": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Label_Names_or_IDs', ``, 'string') }}"
+      },
+      "id": "27f65d50-ef83-49cf-88e9-06d01496cf33",
+      "name": "removeLabelThread",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        1540,
+        740
+      ],
+      "webhookId": "cb63a038-73ba-4488-b70e-e3b8c48ee1b6",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Reply to an email thread. AI-configurable parameters: Thread_ID (string) - the ID of the thread; Message (string) - the reply content; BCC (string) - comma-separated BCC recipients; CC (string) - comma-separated CC recipients.",
+        "resource": "thread",
+        "operation": "reply",
+        "threadId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Thread_ID', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "bccList": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('BCC', ``, 'string') }}",
+          "ccList": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('CC', ``, 'string') }}"
+        }
+      },
+      "id": "65c839be-7791-47b8-8efa-d185aef720da",
+      "name": "replyThread",
+      "type": "n8n-nodes-base.gmailTool",
+      "position": [
+        1700,
+        740
+      ],
+      "webhookId": "b10a9bfd-eca1-40fd-817e-3ab1caf94d97",
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "content": "## Thread Tools\n\n\n",
+        "height": 440,
+        "width": 520,
+        "color": 7
+      },
+      "id": "5a3ec7ac-5ae6-4ef2-bb27-556fd7f01628",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1500,
+        460
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "path": "gmail-enhanced"
+      },
+      "id": "e5b9f0a0-1ec9-4b20-9d95-84bfa94d03fb",
+      "name": "Gmail MCP Server",
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "position": [
+        780,
+        -20
+      ],
+      "webhookId": "a794310b-bca0-4272-99be-a2872c1cadb0",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## USAGE\n\nOpen the Gmail MCP Server node to obtain the SSE server URL.\n\nUse that to configure an N8N AI Agent flow or other AI tool.",
+        "height": 240,
+        "width": 280,
+        "color": 6
+      },
+      "id": "9c979b47-831c-454f-99cc-16bf56d9b120",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        280,
+        -60
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "get": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "reply": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getDraft": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getLabel": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "addLabels": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getLabels": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getThread": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "markAsRead": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "createDraft": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "createLabel": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "deleteDraft": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "deleteLabel": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "replyThread": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "markAsUnread": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "removeLabels": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getManyDrafts": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "addLabelThread": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "getManyThreads": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "removeLabelThread": {
+      "ai_tool": [
+        [
+          {
+            "node": "Gmail MCP Server",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2f4610f5-bd6d-46fd-8735-ce5ab3ee5211",
+  "meta": {
+    "instanceId": "7ff6d94ecf94ba134146ef7d28ffb863f2e40767c6adfd490ff08c52e7d17efe"
+  },
+  "id": "kA0KDdnki6tgELjZ",
+  "tags": []
+}

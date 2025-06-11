@@ -1,0 +1,160 @@
+{
+  "name": "Knowledge Base Upload",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "n8n_data",
+          "mode": "list",
+          "cachedResultName": "n8n_data"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.1,
+      "position": [
+        540,
+        -80
+      ],
+      "id": "3e874b2e-d152-4258-a122-33f82b0ed456",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "GAobXEZirIIinTpD",
+          "name": "QdrantApi FluidFlow"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        700,
+        180
+      ],
+      "id": "0065f2fe-2a84-4b04-bd54-2f3be87a4c84",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterTokenSplitter",
+      "typeVersion": 1,
+      "position": [
+        580,
+        360
+      ],
+      "id": "6bb75466-cd5e-48ba-9e9f-6346219ba6bf",
+      "name": "Token Splitter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        160
+      ],
+      "id": "40cd6876-1cff-4973-9c9f-7692ff5fa2f4",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "lOIiUa4BXzDNMMOt",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Knowledgebase Dataset",
+        "formDescription": "Upload file",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "File Upload",
+              "fieldType": "file",
+              "multipleFiles": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        260,
+        -80
+      ],
+      "id": "817e6b76-d979-499f-a689-01defda1f122",
+      "name": "On form submission",
+      "webhookId": "9a0df875-e77a-4095-b895-7b067fa05d6e"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Token Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "eb060554-a7d0-43dc-a6e1-1c24476ae53b",
+  "meta": {
+    "instanceId": "7ff6d94ecf94ba134146ef7d28ffb863f2e40767c6adfd490ff08c52e7d17efe"
+  },
+  "id": "lt7p5ui5ubOpRDan",
+  "tags": []
+}

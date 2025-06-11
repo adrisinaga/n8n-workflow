@@ -1,0 +1,648 @@
+{
+  "name": "Email Drafter",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Email Drafter Workflow\n\nThis workflow:\n1. Monitors Gmail for important emails\n2. Relays them to Slack channel #salesemailsrelayed\n3. Generates AI draft replies in Brian's tone\n4. Posts drafts to Slack with action buttons\n5. Handles Save as Draft / Send actions\n\nRequired Credentials:\n- Gmail OAuth2\n- Slack OAuth2\n- OpenAI API Key",
+        "height": 380,
+        "width": 400
+      },
+      "id": "31621401-524b-4f2b-8dc1-0544c52c83e5",
+      "name": "Workflow Documentation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Slack Button Handler\n\nCreate a separate workflow with:\n1. Webhook trigger for Slack interactions\n2. Parse button action (save_draft/discard)\n3. If 'save_draft': Create Gmail draft\n4. Return acknowledgment to Slack\n\nWebhook URL: https://your-n8n.com/webhook/slack-interactions",
+        "height": 250,
+        "width": 400
+      },
+      "id": "b6c37964-2e37-4400-b72b-434f47eb518b",
+      "name": "Slack Button Handler Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        1160
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ffagent-testing",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "2695bbc9-047f-4651-a095-20ccac1af9bb",
+      "name": "Webhook - Slack Actions",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        2340,
+        1140
+      ],
+      "webhookId": "slack-email-actions"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = JSON.parse($input.item.json.body.payload);\n\nreturn {\n  action: payload.actions[0].action_id,\n  emailId: payload.actions[0].value,\n  responseUrl: payload.response_url,\n  userId: payload.user.id,\n  originalMessage: payload.message\n};"
+      },
+      "id": "7d9c3566-b5d4-49ab-b636-8ae290df445d",
+      "name": "Parse Slack Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2540,
+        1140
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "1",
+              "leftValue": "={{$json[\"action\"]}}",
+              "rightValue": "save_draft",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1d83ff37-0b6a-49ae-9735-77445361ff28",
+      "name": "Check Action Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2740,
+        1140
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.content }}",
+        "options": {
+          "sendTo": ""
+        }
+      },
+      "id": "7874a2f5-195a-4f32-a1d7-1180554b2e12",
+      "name": "Create Gmail Draft",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3240,
+        1020
+      ],
+      "webhookId": "d684328b-ba62-4c56-8026-bc6c9328b15a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "EC4ZH5Dx6b0sAar0",
+          "name": "Gmail Fluidflow Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"text\":\"✅ Draft saved to Gmail successfully!\"}",
+        "options": {}
+      },
+      "id": "e5694a40-c706-48de-9512-431d30d5ef95",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        3460,
+        1020
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"text\":\"❌ Draft discarded\"}",
+        "options": {}
+      },
+      "id": "1b89136e-a176-4fa1-86b5-1cbafaf0c100",
+      "name": "Respond Discard",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        3460,
+        1240
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "draftData.emailId",
+              "value": "={{ $('Slack Trigger1').item.json.files[0].id }}",
+              "type": "string"
+            },
+            {
+              "id": "2",
+              "name": "draftData.threadId",
+              "value": "={{ $('Slack Trigger1').item.json.bot_id }}",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "draftData.to",
+              "value": "={{ $('Slack Trigger1').item.json.files[0].from[0].address }}",
+              "type": "string"
+            },
+            {
+              "id": "4",
+              "name": "draftData.subject",
+              "value": "={{ $('Slack Trigger1').item.json.files[0].subject }}",
+              "type": "string"
+            },
+            {
+              "id": "5",
+              "name": "draftData.draftContent",
+              "value": "={{ $json.message.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "259711a7-e771-47aa-ae8b-fe6307ba56a6",
+      "name": "Prepare Draft Data1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        3120,
+        680
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C090HS978TC",
+          "mode": "list",
+          "cachedResultName": "email-drafter"
+        },
+        "text": "=*AI Generated Draft Reply:*\nTo: {{ $json.draftData.to }}\n{{$json[\"draftData\"][\"draftContent\"]}}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "id": "0b1043ea-ebd7-426e-91d6-68d1cc0032af",
+      "name": "Post Draft to Slack1",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [
+        3340,
+        680
+      ],
+      "webhookId": "c6ace0cb-17e7-4f2e-a836-087df1bae178",
+      "credentials": {
+        "slackApi": {
+          "id": "3MnYw9J92PB8nIlL",
+          "name": "Slack Channel Email-Drafter"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an expert admin chatbot. Reply email based on the content here: {{ $json.files[0].plain_text }}\n\nHere's your style guide for responses:\n1. Brevity:\n- Concise responses\n- Short paragraphs (1-3 sentences)\n- No unnecessary words\n2. Clarity:\n- Simple, direct language\n- Explain technical terms if needed\n- Use bullet points for multiple items\n3. Structure:\n- Most important information first\n- Headings and subheadings\n- Tables for data/comparisons\n4. Tone:\n- Professional but approachable\n- Confident and authoritative\n- Neither too formal nor casual\n5. Formatting:\n- Markdown for emphasis\n- Bold for key points\n- Code blocks for technical content\n6. Responsiveness:\n- Address all parts of query\n- Offer more details if needed\n- Ask to clarify ambiguous points\n7. Accuracy:\n- Double-check facts/figures\n- Cite sources when needed\n- Admit uncertainty if present\n8. Customization:\n- Match user's knowledge level\n- Reference previous conversations\n- Use appropriate terminology\nEvery response should add value and move the conversation forward.  ",
+              "role": "system"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2720,
+        680
+      ],
+      "id": "326cc2c2-0955-4ed1-96a9-974c17c742c4",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "lOIiUa4BXzDNMMOt",
+          "name": "OpenAi account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slack.com/api/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "slackOAuth2Api",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "channel",
+              "value": "=#email-drafter"
+            },
+            {
+              "name": "thread_ts",
+              "value": "={{ $json.message.ts }}"
+            },
+            {
+              "name": "blocks",
+              "value": "=[{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*Actions for this draft:*\"}},{\"type\":\"actions\",\"block_id\":\"email_actions\",\"elements\":[{\"type\":\"button\",\"text\":{\"type\":\"plain_text\",\"text\":\"💾 Save as Draft\"},\"style\":\"primary\",\"action_id\":\"save_draft\",\"value\":\"{{ $('Prepare Draft Data1').item.json.draftData.draftContent }}\"},{\"type\":\"button\",\"text\":{\"type\":\"plain_text\",\"text\":\"❌ Discard\"},\"style\":\"danger\",\"action_id\":\"discard_draft\",\"value\":\"{{ $('Prepare Draft Data1').item.json.draftData.emailId }}\"}]}]"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Prepare Draft Data1').item.json.draftData.to }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1ae85a13-1eda-489c-a382-e87f836af9c2",
+      "name": "Post Buttons to Slack1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        3560,
+        680
+      ],
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "x5NzlfdjnRswjYc5",
+          "name": "Slack Email-Drafter"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const emailString = $json.emailId || '';\n\n// Split string per baris\nconst lines = emailString.split('\\n');\n\nlet subject = '';\nlet from = '';\nlet to = '';\nlet content = '';\n\n// Fungsi bantu untuk ekstrak field\nfunction extractField(field) {\n  const regex = new RegExp('^' + field + ':\\\\s*(.+)', 'i');\n  const match = lines.find(line => regex.test(line));\n  return match ? match.replace(regex, '$1').trim() : '';\n}\n\n// Extract fields\nsubject = extractField('Subject');\nfrom = extractField('From');\nto = extractField('To');\n\n// Cari index baris terakhir dari header (subject/from/to)\nlet lastHeaderIdx = -1;\n['Subject', 'From', 'To'].forEach(field => {\n  const idx = lines.findIndex(line => new RegExp('^' + field + ':', 'i').test(line));\n  if (idx > lastHeaderIdx) lastHeaderIdx = idx;\n});\n\n// Content mulai setelah header terakhir\ncontent = lines.slice(lastHeaderIdx + 1).join('\\n').trim();\n\nreturn [{\n  json: {\n    subject,\n    from,\n    to,\n    content\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2980,
+        1080
+      ],
+      "id": "c4f82ace-b9e6-4a24-978d-2f774f97cea9",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1OXnBaamN_OuBbCttX7_swSLFFX8QBFjw0vlJvl148KU",
+          "mode": "list",
+          "cachedResultName": "Copy of Gmail Drafts + Sent",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OXnBaamN_OuBbCttX7_swSLFFX8QBFjw0vlJvl148KU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OXnBaamN_OuBbCttX7_swSLFFX8QBFjw0vlJvl148KU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "timestamp": "={{ $now }}",
+            "original_email": "={{ $('Parse Slack Payload').item.json.emailId }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "original_email",
+              "displayName": "original_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_generated_reply",
+              "displayName": "ai_generated_reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "actual_reply_sent",
+              "displayName": "actual_reply_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sender_email",
+              "displayName": "sender_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "subject",
+              "displayName": "subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_model",
+              "displayName": "ai_model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "similarity_score",
+              "displayName": "similarity_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user_rating",
+              "displayName": "user_rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "used_ai_reply",
+              "displayName": "used_ai_reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3680,
+        1020
+      ],
+      "id": "726473c2-9145-44f8-9075-0f85f01ab125",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Dwu3BgDsWxaPs6B0",
+          "name": "Google Sheets account Adri"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "any_event",
+          "message"
+        ],
+        "channelId": {
+          "__rl": true,
+          "value": "C090HS978TC",
+          "mode": "list",
+          "cachedResultName": "email-drafter"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        2440,
+        680
+      ],
+      "id": "22f36b31-4772-45ec-bd3a-ae92261a438c",
+      "name": "Slack Trigger1",
+      "webhookId": "fe647d20-d698-4899-8b39-14e234ce6ad7",
+      "credentials": {
+        "slackApi": {
+          "id": "3MnYw9J92PB8nIlL",
+          "name": "Slack Channel Email-Drafter"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook - Slack Actions": {
+      "main": [
+        [
+          {
+            "node": "Parse Slack Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Slack Payload": {
+      "main": [
+        [
+          {
+            "node": "Check Action Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Action Type": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Discard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Gmail Draft": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Draft Data1": {
+      "main": [
+        [
+          {
+            "node": "Post Draft to Slack1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Prepare Draft Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Draft to Slack1": {
+      "main": [
+        [
+          {
+            "node": "Post Buttons to Slack1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Create Gmail Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond Success": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Trigger1": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2994ae4b-5637-452c-b606-f7a3e58918fd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7ff6d94ecf94ba134146ef7d28ffb863f2e40767c6adfd490ff08c52e7d17efe"
+  },
+  "id": "Xe0ji4DDoxjgP1M8",
+  "tags": []
+}
